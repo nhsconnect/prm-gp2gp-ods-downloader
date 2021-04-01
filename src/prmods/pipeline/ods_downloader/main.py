@@ -1,39 +1,77 @@
-import sys
-from argparse import ArgumentParser
+import csv
+import gzip
+import json
+import logging
+from typing import Iterable
+
+from datetime import datetime
+
 from dataclasses import asdict
 
-from prmods.utils.io.csv import read_gzip_csv_file
-from prmods.utils.io.json import write_json_file
+from os import environ
+from urllib.parse import urlparse
+
+import boto3
+
+from prmods.pipeline.ods_downloader.config import OdsPortalConfig
+
 from prmods.domain.ods_portal.sources import (
     OdsDataFetcher,
     construct_organisation_metadata_from_ods_portal_response,
-    ODS_PORTAL_SEARCH_URL,
     PRACTICE_SEARCH_PARAMS,
     CCG_SEARCH_PARAMS,
     construct_asid_to_ods_mappings,
 )
 
-
-def parse_ods_downloader_pipeline_arguments(args):
-    parser = ArgumentParser(description="ODS portal pipeline")
-    parser.add_argument("--output-file", type=str, required=True)
-    parser.add_argument("--mapping-file", type=str, required=True)
-    parser.add_argument("--search-url", type=str, required=False, default=ODS_PORTAL_SEARCH_URL)
-    return parser.parse_args(args)
+logger = logging.getLogger(__name__)
 
 
-def main():
-    args = parse_ods_downloader_pipeline_arguments(sys.argv[1:])
+def main(config):
 
-    data_fetcher = OdsDataFetcher(search_url=args.search_url)
+    logging.basicConfig(level=logging.INFO)
+
+    s3 = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
+
+    input_object = s3_object(s3, config.mapping_file)
+    output_object = s3_object(s3, config.output_file)
+
+    data_fetcher = OdsDataFetcher(search_url=config.search_url)
 
     practice_data = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
     ccg_data = data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
 
-    asid_mapping = construct_asid_to_ods_mappings(read_gzip_csv_file(args.mapping_file))
-
     organisation_metadata = construct_organisation_metadata_from_ods_portal_response(
-        practice_data, ccg_data, asid_mapping
+        practice_data,
+        ccg_data,
+        construct_asid_to_ods_mappings(_read_gzip_csv_file(input_object.get()["Body"])),
     )
 
-    write_json_file(asdict(organisation_metadata), args.output_file)
+    upload_json_string(output_object, asdict(organisation_metadata))
+
+
+def _read_gzip_csv_file(file_content) -> Iterable[dict]:
+    with gzip.open(file_content, mode="rt") as f:
+        input_csv = csv.DictReader(f)
+        yield from input_csv
+
+
+def upload_json_string(s3_obj, string):
+    body = bytes(json.dumps(string, default=_serialize_datetime).encode("UTF-8"))
+    s3_obj.put(Body=body, ContentType="application/json")
+
+
+def s3_object(s3, url_string):
+    object_url = urlparse(url_string)
+    s3_bucket = object_url.netloc
+    s3_key = object_url.path.lstrip("/")
+    return s3.Object(s3_bucket, s3_key)
+
+
+def _serialize_datetime(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} is not JSON serializable")
+
+
+if __name__ == "__main__":
+    main(config=OdsPortalConfig.from_environment_variables(environ))
