@@ -2,6 +2,18 @@
 
 set -Eeo pipefail
 
+aws_region=eu-west-2
+image_repo_name=registrations/ods-downloader
+
+function docker_login {
+  dojo -c Dojofile-infra "aws ecr get-login --no-include-email --region $aws_region"
+}
+
+function get_aws_account_id {
+  dojo -c Dojofile-infra "aws sts get-caller-identity --query Account --output text"
+}
+
+
 for command in "$@"
 do
   echo "--- ${command} ---"
@@ -44,6 +56,17 @@ do
         ;;
     dojo-validate)
         dojo "./tasks validate"
+        ;;
+    publish-docker)
+        if [ -z $IMAGE_TAG ]; then
+            echo "Please set IMAGE_TAG environment variable"
+            exit 1
+        fi
+        aws_account_id=$(get_aws_account_id)
+        repository_uri=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/${image_repo_name}
+        docker build -t ${repository_uri}:latest -t ${repository_uri}:${IMAGE_TAG} .
+        eval $(docker_login)
+        docker push ${repository_uri}:${IMAGE_TAG}
         ;;
     *)
         echo "Invalid command: '${command}'"
