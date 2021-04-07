@@ -30,10 +30,14 @@ def main(config):
 
     logging.basicConfig(level=logging.INFO)
 
+    logger.info(config.s3_endpoint_url)
+    logger.info(config.mapping_file)
+    logger.info(config.output_file)
+
     s3 = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
 
-    input_object = s3_object(s3, config.mapping_file)
-    output_object = s3_object(s3, config.output_file)
+    asid_lookup_object = _create_s3_object(s3, config.mapping_file)
+    organisation_list_object = _create_s3_object(s3, config.output_file)
 
     data_fetcher = OdsDataFetcher(search_url=config.search_url)
 
@@ -43,10 +47,10 @@ def main(config):
     organisation_metadata = construct_organisation_metadata_from_ods_portal_response(
         practice_data,
         ccg_data,
-        construct_asid_to_ods_mappings(_read_gzip_csv_file(input_object.get()["Body"])),
+        construct_asid_to_ods_mappings(_read_gzip_csv_file(asid_lookup_object.get()["Body"])),
     )
 
-    upload_json_string(output_object, asdict(organisation_metadata))
+    _upload_json_string_to_s3(organisation_list_object, asdict(organisation_metadata))
 
 
 def _read_gzip_csv_file(file_content) -> Iterable[dict]:
@@ -55,22 +59,22 @@ def _read_gzip_csv_file(file_content) -> Iterable[dict]:
         yield from input_csv
 
 
-def upload_json_string(s3_obj, string):
-    body = bytes(json.dumps(string, default=_serialize_datetime).encode("UTF-8"))
-    s3_obj.put(Body=body, ContentType="application/json")
-
-
-def s3_object(s3, url_string):
-    object_url = urlparse(url_string)
-    s3_bucket = object_url.netloc
-    s3_key = object_url.path.lstrip("/")
-    return s3.Object(s3_bucket, s3_key)
-
-
 def _serialize_datetime(obj):
     if isinstance(obj, datetime):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} is not JSON serializable")
+
+
+def _upload_json_string_to_s3(s3_obj, string):
+    body = bytes(json.dumps(string, default=_serialize_datetime).encode("UTF-8"))
+    s3_obj.put(Body=body, ContentType="application/json")
+
+
+def _create_s3_object(s3, url_string):
+    object_url = urlparse(url_string)
+    s3_bucket = object_url.netloc
+    s3_key = object_url.path.lstrip("/")
+    return s3.Object(s3_bucket, s3_key)
 
 
 if __name__ == "__main__":
