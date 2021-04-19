@@ -2,103 +2,64 @@
 
 set -Eeo pipefail
 
-aws_region=eu-west-2
-image_repo_name=registrations/ods-downloader
-role_arn_param="/registrations/dev/user-input/cross-account-admin-role"
-
-function docker_login {
-  dojo -c Dojofile-infra "aws ecr get-login --no-include-email --region $aws_region"
-}
-
-function get_aws_account_id {
-  dojo -c Dojofile-infra "aws sts get-caller-identity --query Account --output text"
-}
-
-function fetch_docker_login() {
-
-  role_arn=$(aws ssm get-parameters --region ${aws_region} --names ${role_arn_param} --query 'Parameters[0].Value' --output text)
-  session_name="ci-publish-ods-downloader"
-
-  sts=$(
-    aws sts assume-role \
-      --role-arn $role_arn \
-      --role-session-name $session_name \
-      --output json
-  )
-  unset AWS_ACCESS_KEY_ID
-  unset AWS_SECRET_ACCESS_KEY
-  unset AWS_SESSION_TOKEN
-  unset AWS_SECURITY_TOKEN
-
-  export AWS_ACCESS_KEY_ID=$(echo $sts | jq -r .Credentials.AccessKeyId)
-  export AWS_SECRET_ACCESS_KEY=$(echo $sts | jq -r .Credentials.SecretAccessKey)
-  export AWS_SESSION_TOKEN=$(echo $sts | jq -r .Credentials.SessionToken)
-
-  aws ecr get-login --no-include-email --region ${aws_region}
-}
-
-
 for command in "$@"
 do
   echo "--- ${command} ---"
   case "${command}" in
     test)
-        tox -e py39
-        ;;
+      tox -e py39
+      ;;
     format)
-        tox -e format
-        ;;
+      tox -e format
+      ;;
     check-format)
-        tox -e check-format
-        ;;
+      tox -e check-format
+      ;;
     lint)
-        tox -e flake8
-        tox -e bandit
-        ;;
+      tox -e flake8
+      tox -e bandit
+      ;;
     typecheck)
-        tox -e mypy
-        ;;
+      tox -e mypy
+      ;;
     check-deps)
-        tox -e check-deps
-        ;;
+      tox -e check-deps
+      ;;
     clean)
-        find ./tests -type f -name "*.pyc" -delete
-        find ./tests -type d -name "__pycache__" -delete
-        find ./src -type f -name "*.pyc" -delete
-        find ./src -type d -name "__pycache__" -delete
-        find ./src -type f -path "*.egg-info*" -delete
-        find ./src -type d -path "*.egg-info" -delete
-        rm -rf build/ dist/ .pytest_cache/
-        ;;
+      find ./tests -type f -name "*.pyc" -delete
+      find ./tests -type d -name "__pycache__" -delete
+      find ./src -type f -name "*.pyc" -delete
+      find ./src -type d -name "__pycache__" -delete
+      find ./src -type f -path "*.egg-info*" -delete
+      find ./src -type d -path "*.egg-info" -delete
+      rm -rf build/ dist/ .pytest_cache/
+      ;;
     devenv)
-        echo "./tasks validate" > .git/hooks/pre-commit
-        chmod +x .git/hooks/pre-commit
-        tox --recreate --devenv venv -e py39
-        ;;
+      echo "./tasks validate" > .git/hooks/pre-commit
+      chmod +x .git/hooks/pre-commit
+      tox --recreate --devenv venv -e py39
+      ;;
     validate)
-        ./tasks check-format typecheck lint test
-        ;;
+      ./tasks check-format typecheck lint test
+      ;;
     dojo-validate)
-        dojo "./tasks validate"
-        ;;
-    docker-login)
-        fetch_docker_login
-        ;;
+      dojo "./tasks validate"
+      ;;
     publish-docker)
-        if [ -z $IMAGE_TAG ]; then
-            echo "Please set IMAGE_TAG environment variable"
-            exit 1
-        fi
-        aws_account_id=$(get_aws_account_id)
-        repository_uri=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/${image_repo_name}
-        docker build -t ${repository_uri}:latest -t ${repository_uri}:${IMAGE_TAG} .
-        eval $(docker_login)
-        docker push ${repository_uri}:${IMAGE_TAG}
-        ;;
+      if [ -z $IMAGE_TAG ]; then
+          echo "Please set IMAGE_TAG environment variable"
+          exit 1
+      fi
+      ecr_login=$(dojo -c Dojofile-infra "./scripts/ecr-helper get-login")
+      ecr_repo_uri=$(dojo -c Dojofile-infra "./scripts/ecr-helper get-repo-uri")
+      docker build -t ${ecr_repo_uri}:latest -t ${ecr_repo_uri}:${IMAGE_TAG} .
+      eval $ecr_login
+      docker push ${ecr_repo_uri}:${IMAGE_TAG}
+      ;;
     *)
-        echo "Invalid command: '${command}'"
-        exit 1
-        ;;
+      echo "Invalid command: '${command}'"
+      exit 1
+      ;;
   esac
 done
 
