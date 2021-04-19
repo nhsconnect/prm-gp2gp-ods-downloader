@@ -4,6 +4,7 @@ set -Eeo pipefail
 
 aws_region=eu-west-2
 image_repo_name=registrations/ods-downloader
+role_arn_param="/registrations/dev/user-input/cross-account-admin-role"
 
 function docker_login {
   dojo -c Dojofile-infra "aws ecr get-login --no-include-email --region $aws_region"
@@ -11,6 +12,29 @@ function docker_login {
 
 function get_aws_account_id {
   dojo -c Dojofile-infra "aws sts get-caller-identity --query Account --output text"
+}
+
+function fetch_docker_login() {
+
+  role_arn=$(aws ssm get-parameters --region ${aws_region} --names ${role_arn_param} --query 'Parameters[0].Value' --output text)
+  session_name="ci-publish-ods-downloader"
+
+  sts=$(
+    aws sts assume-role \
+      --role-arn $role_arn \
+      --role-session-name $session_name \
+      --output json
+  )
+  unset AWS_ACCESS_KEY_ID
+  unset AWS_SECRET_ACCESS_KEY
+  unset AWS_SESSION_TOKEN
+  unset AWS_SECURITY_TOKEN
+
+  export AWS_ACCESS_KEY_ID=$(echo $sts | jq -r .Credentials.AccessKeyId)
+  export AWS_SECRET_ACCESS_KEY=$(echo $sts | jq -r .Credentials.SecretAccessKey)
+  export AWS_SESSION_TOKEN=$(echo $sts | jq -r .Credentials.SessionToken)
+
+  aws ecr get-login --no-include-email --region ${aws_region}
 }
 
 
@@ -56,6 +80,9 @@ do
         ;;
     dojo-validate)
         dojo "./tasks validate"
+        ;;
+    docker-login)
+        fetch_docker_login
         ;;
     publish-docker)
         if [ -z $IMAGE_TAG ]; then
