@@ -3,7 +3,7 @@
 set -Eeo pipefail
 
 aws_region=eu-west-2
-image_repo_name=registrations/ods-downloader
+image_repo_param="/registrations/dev/data-pipeline/ecr/ods-downloader"
 role_arn_param="/registrations/dev/user-input/cross-account-admin-role"
 
 function assume_role() {
@@ -38,6 +38,15 @@ function assume_role() {
 function get_repo_uri() {
   assume_role
   aws_account_id=$(aws sts get-caller-identity --query Account --output text)
+
+  image_repo_name=$(
+    aws ssm get-parameters \
+        --region ${aws_region} \
+        --names ${image_repo_param} \
+        --query 'Parameters[0].Value' \
+        --output text
+  )
+
   repository_uri=${aws_account_id}.dkr.ecr.${aws_region}.amazonaws.com/${image_repo_name}
   echo $repository_uri
 }
