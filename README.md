@@ -83,4 +83,4 @@ To run the pipeline locally:
 ERROR: InvocationError for command /YOUR_PROJECT_DIRECTORY/prm-gp2gp-ods-download/.tox/check-format/bin/black --check -t py38 -l100 src/ tests/ setup.py (exited with code 2)
 ```
 
-If you see this error, you need to delete the .tox package and try again
+If you see this error, you need to delete the .tox package and try again.
