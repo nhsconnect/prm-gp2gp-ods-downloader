@@ -10,3 +10,4 @@ venv/
 gp2gp_ods_downloader.egg-info
 .tox
 .coverage
+audit-output.txt
