@@ -58,24 +58,11 @@ This will run the validation commands in the same container used by the GoCD pip
 
 ### ODS Portal Pipeline
 
-This pipeline will fetch ODS codes and names of all active GP practices and save to json file.
+This pipeline will fetch ODS codes and names of all active GP practices and save the JSON file to an S3 bucket.
 
-To run the ODS Portal pipeline you will need to run the docker image. 
-This can be done locally by building the image based on the Dockerfile. Or alternatively the image can be pulled from ECR
-
-This is an example of how to build your image locally:
+To build your image locally:
 
 `docker build . -t <tag>`
-
-To pull the image from AWS ECR, you should login to AWS Vault and then pull the image from ECR:
-
-`aws-vault exec <profile-name>`
-`docker pull <account-id>.dkr.ecr.eu-west-2.amazonaws.com/registrations/ods-downloader`
-
-To run the pipeline locally:
-
-`docker run -e MAPPING_FILE=<asid_lookup.csv.gz(s3 format)> -e OUTPUT_FILE=<organisation(s3 format)> -e AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY_ID> -e AWS_SECRET_ACCESS_KEY=<AWS_SECRET_ACCESS_KEY> -e AWS_SESSION_TOKEN=<AWS_SESSION_TOKEN> -e AWS_SECURITY_TOKEN=<AWS_SECURITY_TOKEN> <image-name>:<image-tag>
- `
 
 ## Troubleshooting
 
