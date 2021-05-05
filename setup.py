@@ -6,9 +6,9 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
-        "python-dateutil~=2.8",
-        "requests~=2.2",
-        "boto3~=1.17.42",
+        "python-dateutil>=2.8",
+        "requests>=2.2",
+        "boto3>=1.17.42",
     ],
     entry_points={
         "console_scripts": [
