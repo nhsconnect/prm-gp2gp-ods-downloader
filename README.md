@@ -63,8 +63,10 @@ Ensure you have pyenv installed (use `brew install pyenv`).
 Perform the following steps:
 
 1. Run `brew uninstall pipenv`
-4. Run `pyenv install <required-python-version>`
-5. Run `pyenv global <required-python-version>`
+2. Run `pyenv install <required-python-version>`
+3. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout )
+4. Run `pyenv global <required-python-version>`
+5. For the following steps open another terminal.
 6. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
 7. Run `python -m pip install -U "pip>=<required-pip-version>"`
 8. Now running `./tasks check-deps` should pass.
