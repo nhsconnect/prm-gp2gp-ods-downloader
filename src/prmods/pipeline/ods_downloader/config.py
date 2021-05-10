@@ -1,6 +1,8 @@
+from datetime import datetime
 import sys
 from dataclasses import dataclass, MISSING, fields
 import logging
+
 from typing import Optional
 
 from prmods.domain.ods_portal.sources import ODS_PORTAL_SEARCH_URL
@@ -21,8 +23,10 @@ def _read_env(field, env_vars):
 
 @dataclass
 class OdsPortalConfig:
-    output_file: str
-    mapping_file: str
+    output_bucket: str
+    mapping_bucket: str
+    month: Optional[int] = datetime.utcnow().month
+    year: Optional[int] = datetime.utcnow().year
     search_url: Optional[str] = ODS_PORTAL_SEARCH_URL
     s3_endpoint_url: Optional[str] = None
 

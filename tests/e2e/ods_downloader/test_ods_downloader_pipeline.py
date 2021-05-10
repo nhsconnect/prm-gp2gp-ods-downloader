@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler
 from io import BytesIO
 from urllib.parse import parse_qs
@@ -129,7 +130,10 @@ def test_with_s3():
     output_bucket = s3.Bucket(output_bucket_name)
     output_bucket.create()
 
-    output_bucket.upload_fileobj(INPUT_ASID_CSV, "asidLookup.csv.gz")
+    month = datetime.utcnow().month
+    year = datetime.utcnow().year
+
+    output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
 
     environ["AWS_ACCESS_KEY_ID"] = "testing"
     environ["AWS_SECRET_ACCESS_KEY"] = "testing"
@@ -137,14 +141,14 @@ def test_with_s3():
 
     main(
         OdsPortalConfig(
-            output_file="s3://prm-gp2gp-ods-data/output.json",
-            mapping_file="s3://prm-gp2gp-ods-data/asidLookup.csv.gz",
+            output_bucket="prm-gp2gp-ods-data",
+            mapping_bucket="prm-gp2gp-ods-data",
             s3_endpoint_url=FAKE_S3_URL,
             search_url=FAKE_ODS_PORTAL_URL,
         )
     )
 
-    actual = _read_s3_json_file(output_bucket, "output.json")
+    actual = _read_s3_json_file(output_bucket, f"{year}/{month}/organisationMetadata.json")
 
     try:
         assert actual["practices"] == EXPECTED_PRACTICES

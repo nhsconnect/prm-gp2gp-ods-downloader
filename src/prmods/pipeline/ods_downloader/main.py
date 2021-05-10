@@ -27,13 +27,36 @@ def main(config):
     logging.basicConfig(level=logging.INFO)
 
     logger.info(config.s3_endpoint_url)
-    logger.info(config.mapping_file)
-    logger.info(config.output_file)
+
+    mapping_bucket_name = config.mapping_bucket
+    output_bucket_name = config.output_bucket
+
+    mapping_bucket_url = (
+        "s3://"
+        + mapping_bucket_name
+        + "/"
+        + str(config.year)
+        + "/"
+        + str(config.month)
+        + "/asidLookup.csv.gz"
+    )
+    output_bucket_url = (
+        "s3://"
+        + output_bucket_name
+        + "/"
+        + str(config.year)
+        + "/"
+        + str(config.month)
+        + "/organisationMetadata.json"
+    )
+
+    logger.info("using asid lookup file located in : " + mapping_bucket_url)
+    logger.info("output location is: " + output_bucket_url)
 
     s3 = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
 
-    asid_lookup_object = _create_s3_object(s3, config.mapping_file)
-    organisation_list_object = _create_s3_object(s3, config.output_file)
+    asid_lookup_object = _create_s3_object(s3, mapping_bucket_url)
+    organisation_list_object = _create_s3_object(s3, output_bucket_url)
 
     data_fetcher = OdsDataFetcher(search_url=config.search_url)
 
