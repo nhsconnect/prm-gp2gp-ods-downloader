@@ -9,6 +9,7 @@ import boto3
 from os import environ
 from threading import Thread
 from botocore.config import Config
+from botocore.exceptions import ClientError
 from moto.server import DomainDispatcherApplication, create_backend_app
 from werkzeug.serving import make_server
 
@@ -158,3 +159,41 @@ def test_with_s3():
         output_bucket.delete()
         fake_ods.stop()
         fake_s3.stop()
+
+
+def test_error_when_unable_to_locate_asid_look_up_file():
+    fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
+    fake_s3.start()
+
+    fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
+    fake_ods.start()
+
+    s3 = boto3.resource(
+        "s3",
+        endpoint_url=FAKE_S3_URL,
+        aws_access_key_id=FAKE_S3_ACCESS_KEY,
+        aws_secret_access_key=FAKE_S3_SECRET_KEY,
+        config=Config(signature_version="s3v4"),
+        region_name=FAKE_S3_REGION,
+    )
+
+    output_bucket_name = "prm-gp2gp-ods-data"
+    output_bucket = s3.Bucket(output_bucket_name)
+    output_bucket.create()
+
+    try:
+        main(
+            OdsPortalConfig(
+                output_bucket="prm-gp2gp-ods-data",
+                mapping_bucket="prm-gp2gp-ods-data",
+                s3_endpoint_url=FAKE_S3_URL,
+                search_url=FAKE_ODS_PORTAL_URL,
+            )
+        )
+    except ClientError as ex:
+        assert ex.__str__().__contains__("NoSuchKey")
+
+    output_bucket.objects.all().delete()
+    output_bucket.delete()
+    fake_ods.stop()
+    fake_s3.stop()

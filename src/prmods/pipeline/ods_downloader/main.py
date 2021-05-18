@@ -6,6 +6,7 @@ from os import environ
 from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import ClientError
 
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
@@ -62,7 +63,11 @@ def main(config):
 
     practice_data = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
     ccg_data = data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
-    asid_lookup_content = read_gzip_csv_file(asid_lookup_object.get()["Body"])
+    try:
+        asid_lookup_content = read_gzip_csv_file(asid_lookup_object.get()["Body"])
+    except ClientError as ex:
+        logger.error("Unable to read mapping file." + str(ex))
+        raise ex
 
     organisation_metadata = construct_organisation_metadata_from_ods_portal_response(
         practice_data,
