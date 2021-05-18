@@ -12,12 +12,34 @@ Common development workflows are defined in the `tasks` script.
 - [Pipenv](https://pypi.org/project/pipenv/). Install by running `python -m pip install pipenv`
 - [Docker](https://www.docker.com/get-started)
 
-### Setup
+#### Installing the correct versions of pip and python locally
+
+Ensure you are not within a virtual environment (run `deactivate` if you are in one)
+
+1. Run `pyenv install 3.9.4`
+2. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout )
+3. Run `pyenv global 3.9.4`
+4. For the following steps open another terminal.
+5. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
+6. Run `python -m pip install -U "pip>=21.1`
+   - `pyenv global` should output the specific python version specified rather than `system`.
+   - Both `python --version` and `pip --version` should point to the versions you have specified.
+   - `ls -l $(which pipenv)` should output `.../.pyenv/shims/pipenv` rather than `...Cellar...` (which is a brew install).
+
+#### Python virtual environment
+
+From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`
+
+To deactivate the virtual environment run `deactivate`.
+
+To remove the virtual environment and clear the cache, run `pipenv --rm && pipenv --clear`.
+
+Run the following commands in the virtual environment:
+
+### Scripts
 These instructions assume you are using:
 
 - [aws-vault](https://github.com/99designs/aws-vault) to validate your AWS credentials.
-
-Run `./tasks devenv` to install required dependencies.
 
 ### Running the unit tests
 
@@ -63,13 +85,11 @@ Ensure you have pyenv installed (use `brew install pyenv`).
 Perform the following steps:
 
 1. Run `brew uninstall pipenv`
-2. Run `pyenv install <required-python-version>`
-3. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout )
-4. Run `pyenv global <required-python-version>`
-5. For the following steps open another terminal.
-6. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
-7. Run `python -m pip install -U "pip>=<required-pip-version>"`
-8. Now running `./tasks check-deps` should pass.
-    - `pyenv global` should output the specific python version specified rather than `system`.
-    - Both `python --version` and `pip --version` should point to the versions you have specified.
-    - `ls -l $(which pipenv)` should output `.../.pyenv/shims/pipenv` rather than `...Cellar...` (which is a brew install).
+2. Run the steps listed under [Installing correct version of pip and python](#installing-correct-version-of-pip-and-python)
+3. Now running `./tasks check-deps` should pass.
+
+#### Python virtual environments
+
+If you see the below notice when trying to activate the python virtual environment, run `deactivate` before trying again.
+
+> Courtesy Notice: Pipenv found itself running within a virtual environment, so it will automatically use that environment, instead of creating its own for any project. You can set PIPENV_IGNORE_VIRTUALENVS=1 to force pipenv to ignore that environment and create its own instead. You can set PIPENV_VERBOSITY=-1 to suppress this warning.
