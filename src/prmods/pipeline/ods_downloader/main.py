@@ -66,7 +66,7 @@ def main(config):
     try:
         asid_lookup_content = read_gzip_csv_file(asid_lookup_object.get()["Body"])
     except ClientError as ex:
-        logger.error("Unable to read mapping file." + ex.response.get("Error").get("Message"))
+        logger.error("Unable to read asid mapping file. " + ex.response.get("Error").get("Message"))
         raise ex
 
     organisation_metadata = construct_organisation_metadata_from_ods_portal_response(
