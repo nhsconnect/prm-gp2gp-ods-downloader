@@ -22,6 +22,8 @@ from prmods.utils.io.json import upload_json_object
 
 logger = logging.getLogger(__name__)
 
+VERSION = "v2"
+
 
 def main(config):
 
@@ -33,22 +35,11 @@ def main(config):
     output_bucket_name = config.output_bucket
 
     mapping_bucket_url = (
-        "s3://"
-        + mapping_bucket_name
-        + "/"
-        + str(config.year)
-        + "/"
-        + str(config.month)
-        + "/asidLookup.csv.gz"
+        f"s3://{mapping_bucket_name}/{config.year}/{config.month}/asidLookup.csv.gz"
     )
     output_bucket_url = (
-        "s3://"
-        + output_bucket_name
-        + "/"
-        + str(config.year)
-        + "/"
-        + str(config.month)
-        + "/organisationMetadata.json"
+        f"s3://{output_bucket_name}/{VERSION}/{config.year}/{config.month}"
+        f"/organisationMetadata.json"
     )
 
     logger.info("using asid lookup file located in : " + mapping_bucket_url)

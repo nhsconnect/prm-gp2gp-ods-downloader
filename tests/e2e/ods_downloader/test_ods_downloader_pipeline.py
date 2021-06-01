@@ -15,6 +15,8 @@ from werkzeug.serving import make_server
 
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 from prmods.pipeline.ods_downloader.main import main
+
+from src.prmods.pipeline.ods_downloader.main import VERSION
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"
@@ -149,7 +151,9 @@ def test_with_s3():
         )
     )
 
-    actual = _read_s3_json_file(output_bucket, f"{year}/{month}/organisationMetadata.json")
+    actual = _read_s3_json_file(
+        output_bucket, f"{VERSION}/{year}/{month}/organisationMetadata.json"
+    )
 
     try:
         assert actual["practices"] == EXPECTED_PRACTICES
