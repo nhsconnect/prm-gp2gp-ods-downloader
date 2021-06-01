@@ -68,6 +68,8 @@ def main(config):
 
     upload_json_object(organisation_list_object, asdict(organisation_metadata))
 
+    logger.info(f"Successfully generated organisation metadata and uploaded to {output_bucket_url}")
+
 
 def _create_s3_object(s3, url_string):
     object_url = urlparse(url_string)
