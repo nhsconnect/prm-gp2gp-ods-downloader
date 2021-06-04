@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 VERSION = "v2"
 
 
-def main(config):
+def main():
+    config = OdsPortalConfig.from_environment_variables(environ)
 
     logging.basicConfig(level=logging.INFO)
 
@@ -34,12 +35,10 @@ def main(config):
     mapping_bucket_name = config.mapping_bucket
     output_bucket_name = config.output_bucket
 
-    mapping_bucket_url = (
-        f"s3://{mapping_bucket_name}/{config.year}/{config.month}/asidLookup.csv.gz"
-    )
+    date_prefix = f"{config.date_anchor.year}/{config.date_anchor.month}"
+    mapping_bucket_url = f"s3://{mapping_bucket_name}/{date_prefix}/asidLookup.csv.gz"
     output_bucket_url = (
-        f"s3://{output_bucket_name}/{VERSION}/{config.year}/{config.month}"
-        f"/organisationMetadata.json"
+        f"s3://{output_bucket_name}/{VERSION}/{date_prefix}" f"/organisationMetadata.json"
     )
 
     logger.info("using asid lookup file located in : " + mapping_bucket_url)
@@ -79,4 +78,4 @@ def _create_s3_object(s3, url_string):
 
 
 if __name__ == "__main__":
-    main(config=OdsPortalConfig.from_environment_variables(environ))
+    main()

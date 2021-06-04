@@ -1,32 +1,43 @@
 from datetime import datetime
-import sys
 from dataclasses import dataclass, MISSING, fields
 import logging
 
 from typing import Optional
 
+from dateutil.parser import isoparse
 from prmods.domain.ods_portal.sources import ODS_PORTAL_SEARCH_URL
 
 logger = logging.getLogger(__name__)
 
 
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+def _convert_env_value(env_value, config_type):
+    if config_type == datetime:
+        return isoparse(env_value)
+    return env_value
+
+
 def _read_env(field, env_vars):
     env_var = field.name.upper()
     if env_var in env_vars:
-        return env_vars[env_var]
+        env_value = env_vars[env_var]
+        return _convert_env_value(env_value, field.type)
     elif field.default != MISSING:
         return field.default
     else:
-        logger.error(f"Expected environment variable {env_var} was not set, exiting...")
-        sys.exit(1)
+        raise MissingEnvironmentVariable(
+            f"Expected environment variable {env_var} was not set, exiting..."
+        )
 
 
 @dataclass
 class OdsPortalConfig:
     output_bucket: str
     mapping_bucket: str
-    month: Optional[int] = datetime.utcnow().month
-    year: Optional[int] = datetime.utcnow().year
+    date_anchor: datetime
     search_url: Optional[str] = ODS_PORTAL_SEARCH_URL
     s3_endpoint_url: Optional[str] = None
 
