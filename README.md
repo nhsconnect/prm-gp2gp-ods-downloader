@@ -17,7 +17,7 @@ Common development workflows are defined in the `tasks` script.
 Ensure you are not within a virtual environment (run `deactivate` if you are in one)
 
 1. Run `pyenv install 3.9.4`
-2. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout )
+2. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout)
 3. Run `pyenv global 3.9.4`
 4. For the following steps open another terminal.
 5. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
@@ -28,7 +28,7 @@ Ensure you are not within a virtual environment (run `deactivate` if you are in 
 
 #### Python virtual environment
 
-From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`
+From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`.
 
 To deactivate the virtual environment run `deactivate`.
 
@@ -37,6 +37,7 @@ To remove the virtual environment and clear the cache, run `pipenv --rm && pipen
 Run the following commands in the virtual environment:
 
 ### Scripts
+
 These instructions assume you are using:
 
 - [aws-vault](https://github.com/99designs/aws-vault) to validate your AWS credentials.
@@ -66,6 +67,7 @@ This will run the validation commands in the same container used by the GoCD pip
 ### Dependency Scanning
 
 `./tasks check-deps`
+
 - If this fails when running outside of Dojo, see [troubleshooting section](### Troubleshooting)
 
 ### ODS Portal Pipeline
