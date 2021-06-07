@@ -28,7 +28,7 @@ Ensure you are not within a virtual environment (run `deactivate` if you are in 
 
 #### Python virtual environment
 
-From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`.
+From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`
 
 To deactivate the virtual environment run `deactivate`.
 
