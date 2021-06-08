@@ -32,7 +32,7 @@ def main():
     date_prefix = f"{config.date_anchor.year}/{config.date_anchor.month}"
     asid_lookup_s3_path = f"s3://{config.mapping_bucket}/{date_prefix}/asidLookup.csv.gz"
     metadata_output_s3_path = (
-        f"s3://{config.mapping_bucket}/{VERSION}/{date_prefix}" f"/organisationMetadata.json"
+        f"s3://{config.output_bucket}/{VERSION}/{date_prefix}" f"/organisationMetadata.json"
     )
 
     logger.info("using asid lookup file located in : " + asid_lookup_s3_path)
