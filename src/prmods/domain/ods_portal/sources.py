@@ -6,7 +6,6 @@ from warnings import warn
 
 import requests
 from dateutil.tz import tzutc
-from dateutil import parser
 
 from prmods.domain.ods_portal.models import (
     CcgDetails,
@@ -58,17 +57,6 @@ class OdsDataFetcher:
         if response.status_code != 200:
             raise OdsPortalException("Unable to fetch organisation data", response.status_code)
         return json.loads(response.content)["Organisations"]
-
-
-def construct_organisation_list_from_dict(data: dict) -> OrganisationMetadata:
-    return OrganisationMetadata(
-        generated_on=parser.isoparse(data["generated_on"]),
-        practices=[
-            PracticeDetails(asids=p["asids"], ods_code=p["ods_code"], name=p["name"])
-            for p in data["practices"]
-        ],
-        ccgs=[CcgDetails(ods_code=c["ods_code"], name=c["name"]) for c in data["ccgs"]],
-    )
 
 
 def _is_ods_in_mapping(
