@@ -87,6 +87,18 @@ def construct_organisation_metadata_from_ods_portal_response(
     )
 
 
+def construct_practice_metadata_from_ods_portal_response(
+    practice_data: Iterable[dict], asid_mapping: dict
+) -> List[PracticeDetails]:
+    unique_practices = _remove_duplicated_organisations(practice_data)
+
+    return [
+        PracticeDetails(asids=asid_mapping[p["OrgId"]], ods_code=p["OrgId"], name=p["Name"])
+        for p in unique_practices
+        if _is_ods_in_mapping(p["OrgId"], asid_mapping)
+    ]
+
+
 def _remove_duplicated_organisations(raw_organisations: Iterable[dict]) -> Iterable[dict]:
     return {obj["OrgId"]: obj for obj in raw_organisations}.values()
 
