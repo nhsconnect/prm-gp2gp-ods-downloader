@@ -52,6 +52,14 @@ MOCK_CCG_RESPONSE_CONTENT = (
     b'{"Name": "Test CCG 2", "OrgId": "13B"}, '
     b'{"Name": "Test CCG 3", "OrgId": "14C"}]}'
 )
+MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1 = (
+    b'{"Organisations": [{"Name": "Test GP", "OrgId": "A12345"}]}'
+)
+MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2 = b'{"Organisations": []} '
+MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3 = (
+    b'{"Organisations": [{"Name": "Test GP 2", "OrgId": "B12345"}, '
+    b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
+)
 
 EXPECTED_PRACTICES = [
     {"ods_code": "A12345", "name": "Test GP", "asids": ["000011357014"]},
@@ -60,9 +68,9 @@ EXPECTED_PRACTICES = [
 ]
 
 EXPECTED_CCGS = [
-    {"ods_code": "12A", "name": "Test CCG"},
-    {"ods_code": "13B", "name": "Test CCG 2"},
-    {"ods_code": "14C", "name": "Test CCG 3"},
+    {"ods_code": "12A", "name": "Test CCG", "practices": ["A12345"]},
+    {"ods_code": "13B", "name": "Test CCG 2", "practices": []},
+    {"ods_code": "14C", "name": "Test CCG 3", "practices": ["B12345", "C12345"]},
 ]
 
 
@@ -82,14 +90,25 @@ class ThreadedServer:
 class MockOdsRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_params = parse_qs(self.path[2:])
-        primary_role = parsed_params["PrimaryRoleId"][0]
+        primary_role = parsed_params.get("PrimaryRoleId")
+        target_org_id = parsed_params.get("TargetOrgId")
 
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.end_headers()
-        self.wfile.write(
-            MOCK_PRACTICE_RESPONSE_CONTENT if primary_role == "RO177" else MOCK_CCG_RESPONSE_CONTENT
-        )
+        self.wfile.write(self._get_mock_response(primary_role, target_org_id))
+
+    def _get_mock_response(self, primary_role, target_org_id):
+        if primary_role and primary_role[0] == "RO177":
+            return MOCK_PRACTICE_RESPONSE_CONTENT
+        elif target_org_id and target_org_id[0] == "12A":
+            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1
+        elif target_org_id and target_org_id[0] == "13B":
+            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2
+        elif target_org_id and target_org_id[0] == "14C":
+            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3
+        else:
+            return MOCK_CCG_RESPONSE_CONTENT
 
 
 def _build_fake_s3(host, port):

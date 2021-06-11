@@ -45,7 +45,7 @@ def main():
 
     data_fetcher = OdsDataFetcher(search_url=config.search_url)
 
-    asid_lookup = list(s3_manager.read_gzip_csv(asid_lookup_s3_path))
+    asid_lookup = s3_manager.read_gzip_csv(asid_lookup_s3_path)
 
     practice_data_response = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
     practice_metadata = construct_practice_metadata_from_ods_portal_response(
@@ -53,7 +53,7 @@ def main():
     )
 
     ccg_data_response = data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
-    ccg_metadata = construct_ccg_metadata_from_ods_portal_response(ccg_data_response)
+    ccg_metadata = construct_ccg_metadata_from_ods_portal_response(ccg_data_response, data_fetcher)
 
     organisation_metadata = construct_organisation_metadata_from_practice_and_ccg_lists(
         practice_metadata,

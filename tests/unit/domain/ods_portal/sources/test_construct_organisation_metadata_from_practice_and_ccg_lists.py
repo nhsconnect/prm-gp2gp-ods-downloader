@@ -27,9 +27,9 @@ def test_returns_multiple_practices_and_ccgs():
     ]
 
     ccg_metadata = [
-        CcgDetails(ods_code="12A", name="CCG"),
-        CcgDetails(ods_code="34A", name="CCG 2"),
-        CcgDetails(ods_code="56A", name="CCG 3"),
+        CcgDetails(ods_code="12A", name="CCG", practices=[]),
+        CcgDetails(ods_code="34A", name="CCG 2", practices=[]),
+        CcgDetails(ods_code="56A", name="CCG 3", practices=[]),
     ]
 
     actual = construct_organisation_metadata_from_practice_and_ccg_lists(

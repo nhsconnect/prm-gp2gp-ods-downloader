@@ -7,6 +7,7 @@ from typing import List
 class CcgDetails:
     ods_code: str
     name: str
+    practices: List[str]
 
 
 @dataclass

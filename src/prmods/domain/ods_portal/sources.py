@@ -25,6 +25,11 @@ CCG_SEARCH_PARAMS = {
     "Status": "Active",
     "Limit": "1000",
 }
+CCG_PRACTICES_SEARCH_PARAMS = {
+    "RelTypeId": "RE4",
+    "RelStatus": "active",
+    "Limit": "1000",
+}
 
 NEXT_PAGE_HEADER = "Next-Page"
 
@@ -45,12 +50,15 @@ class OdsDataFetcher:
         return response_data
 
     def _iterate_organisation_data(self, params):
-        response = self._client.get(self._search_url, params)
-        yield from self._process_practice_data_response(response)
-
-        while NEXT_PAGE_HEADER in response.headers:
-            response = self._client.get(response.headers[NEXT_PAGE_HEADER])
+        try:
+            response = self._client.get(self._search_url, params)
             yield from self._process_practice_data_response(response)
+
+            while NEXT_PAGE_HEADER in response.headers:
+                response = self._client.get(response.headers[NEXT_PAGE_HEADER])
+                yield from self._process_practice_data_response(response)
+        except StopIteration:
+            pass
 
     @classmethod
     def _process_practice_data_response(cls, response):
@@ -91,11 +99,26 @@ def construct_practice_metadata_from_ods_portal_response(
 
 
 def construct_ccg_metadata_from_ods_portal_response(
-    ccg_data_response: Iterable[dict],
+    ccg_data_response: Iterable[dict], data_fetcher: OdsDataFetcher
 ) -> List[CcgDetails]:
     unique_ccgs = _remove_duplicated_organisations(ccg_data_response)
 
-    return [CcgDetails(ods_code=c["OrgId"], name=c["Name"]) for c in unique_ccgs]
+    return [
+        CcgDetails(
+            ods_code=c["OrgId"],
+            name=c["Name"],
+            practices=_fetch_practices_for_a_ccg(c["OrgId"], data_fetcher),
+        )
+        for c in unique_ccgs
+    ]
+
+
+def _fetch_practices_for_a_ccg(ccg_ods_code: str, data_fetcher: OdsDataFetcher) -> List[str]:
+    CCG_PRACTICES_SEARCH_PARAMS.update({"TargetOrgId": ccg_ods_code})
+
+    ccg_practices_response = data_fetcher.fetch_organisation_data(CCG_PRACTICES_SEARCH_PARAMS)
+    ccg_practices = [p["OrgId"] for p in ccg_practices_response]
+    return ccg_practices
 
 
 def _remove_duplicated_organisations(raw_organisations: Iterable[dict]) -> Iterable[dict]:
