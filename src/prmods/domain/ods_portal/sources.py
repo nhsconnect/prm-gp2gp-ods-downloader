@@ -99,6 +99,12 @@ def construct_practice_metadata_from_ods_portal_response(
     ]
 
 
+def construct_ccg_metadata_from_ods_portal_response(ccg_data: Iterable[dict]) -> List[CcgDetails]:
+    unique_ccgs = _remove_duplicated_organisations(ccg_data)
+
+    return [CcgDetails(ods_code=c["OrgId"], name=c["Name"]) for c in unique_ccgs]
+
+
 def _remove_duplicated_organisations(raw_organisations: Iterable[dict]) -> Iterable[dict]:
     return {obj["OrgId"]: obj for obj in raw_organisations}.values()
 
