@@ -10,9 +10,11 @@ from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
 from prmods.domain.ods_portal.sources import (
     OdsDataFetcher,
-    construct_organisation_metadata_from_ods_portal_response,
+    construct_organisation_metadata_from_practice_and_ccg_lists,
     PRACTICE_SEARCH_PARAMS,
     CCG_SEARCH_PARAMS,
+    construct_practice_metadata_from_ods_portal_response,
+    construct_ccg_metadata_from_ods_portal_response,
     construct_asid_to_ods_mappings,
 )
 from prmods.utils.io.s3 import S3DataManager
@@ -43,15 +45,19 @@ def main():
 
     data_fetcher = OdsDataFetcher(search_url=config.search_url)
 
-    practice_data = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
-    ccg_data = data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
+    asid_lookup = list(s3_manager.read_gzip_csv(asid_lookup_s3_path))
 
-    asid_lookup = s3_manager.read_gzip_csv(asid_lookup_s3_path)
+    practice_data_response = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
+    practice_metadata = construct_practice_metadata_from_ods_portal_response(
+        practice_data_response, construct_asid_to_ods_mappings(asid_lookup)
+    )
 
-    organisation_metadata = construct_organisation_metadata_from_ods_portal_response(
-        practice_data,
-        ccg_data,
-        construct_asid_to_ods_mappings(asid_lookup),
+    ccg_data_response = data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
+    ccg_metadata = construct_ccg_metadata_from_ods_portal_response(ccg_data_response)
+
+    organisation_metadata = construct_organisation_metadata_from_practice_and_ccg_lists(
+        practice_metadata,
+        ccg_metadata,
     )
     s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata))
 

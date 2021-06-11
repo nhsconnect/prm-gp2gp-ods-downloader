@@ -70,27 +70,18 @@ def _is_ods_in_mapping(
         return False
 
 
-def construct_organisation_metadata_from_ods_portal_response(
-    practice_data: Iterable[dict], ccg_data: Iterable[dict], asid_mapping: dict
+def construct_organisation_metadata_from_practice_and_ccg_lists(
+    practice_metadata: List[PracticeDetails], ccg_metadata: List[CcgDetails]
 ) -> OrganisationMetadata:
-    unique_practices = _remove_duplicated_organisations(practice_data)
-    unique_ccgs = _remove_duplicated_organisations(ccg_data)
-
     return OrganisationMetadata(
-        generated_on=datetime.now(tzutc()),
-        practices=[
-            PracticeDetails(asids=asid_mapping[p["OrgId"]], ods_code=p["OrgId"], name=p["Name"])
-            for p in unique_practices
-            if _is_ods_in_mapping(p["OrgId"], asid_mapping)
-        ],
-        ccgs=[CcgDetails(ods_code=c["OrgId"], name=c["Name"]) for c in unique_ccgs],
+        generated_on=datetime.now(tzutc()), practices=practice_metadata, ccgs=ccg_metadata
     )
 
 
 def construct_practice_metadata_from_ods_portal_response(
-    practice_data: Iterable[dict], asid_mapping: dict
+    practice_data_response: Iterable[dict], asid_mapping: dict
 ) -> List[PracticeDetails]:
-    unique_practices = _remove_duplicated_organisations(practice_data)
+    unique_practices = _remove_duplicated_organisations(practice_data_response)
 
     return [
         PracticeDetails(asids=asid_mapping[p["OrgId"]], ods_code=p["OrgId"], name=p["Name"])
@@ -99,8 +90,10 @@ def construct_practice_metadata_from_ods_portal_response(
     ]
 
 
-def construct_ccg_metadata_from_ods_portal_response(ccg_data: Iterable[dict]) -> List[CcgDetails]:
-    unique_ccgs = _remove_duplicated_organisations(ccg_data)
+def construct_ccg_metadata_from_ods_portal_response(
+    ccg_data_response: Iterable[dict],
+) -> List[CcgDetails]:
+    unique_ccgs = _remove_duplicated_organisations(ccg_data_response)
 
     return [CcgDetails(ods_code=c["OrgId"], name=c["Name"]) for c in unique_ccgs]
 
