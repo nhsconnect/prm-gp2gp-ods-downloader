@@ -1,7 +1,9 @@
 import pytest
 
-from prmods.domain.ods_portal.models import PracticeDetails
-from prmods.domain.ods_portal.sources import construct_practice_metadata_from_ods_portal_response
+from prmods.domain.ods_portal.organisation_metadata import PracticeDetails
+from prmods.domain.ods_portal.organisation_metadata import (
+    construct_practice_metadata_from_ods_portal_response,
+)
 from tests.builders.ods_portal import build_ods_organisation_data_response
 
 

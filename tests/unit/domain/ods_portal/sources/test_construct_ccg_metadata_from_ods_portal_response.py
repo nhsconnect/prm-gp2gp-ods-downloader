@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock
 
-from prmods.domain.ods_portal.models import CcgDetails
-from prmods.domain.ods_portal.sources import (
+from prmods.domain.ods_portal.organisation_metadata import (
+    CcgDetails,
     construct_ccg_metadata_from_ods_portal_response,
-    OdsDataFetcher,
 )
+from prmods.domain.ods_portal.ods_data_fetcher import OdsDataFetcher
 from tests.builders.ods_portal import build_ods_organisation_data_response, build_mock_response
 
 mock_response = build_mock_response(content=b'{"Organisations": []}')

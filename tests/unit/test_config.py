@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 from dateutil.tz import tzutc
-from prmods.domain.ods_portal.sources import ODS_PORTAL_SEARCH_URL
+from prmods.domain.ods_portal.ods_data_fetcher import ODS_PORTAL_SEARCH_URL
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig, MissingEnvironmentVariable
 
 

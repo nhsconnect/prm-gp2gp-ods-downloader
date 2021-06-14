@@ -1,4 +1,4 @@
-from src.prmods.domain.ods_portal.sources import construct_asid_to_ods_mappings
+from src.prmods.domain.ods_portal.organisation_metadata import construct_asid_to_ods_mappings
 
 
 def test_returns_dict_with_one_asid_mapping():

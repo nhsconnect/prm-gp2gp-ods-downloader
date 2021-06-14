@@ -6,16 +6,18 @@ from os import environ
 
 import boto3
 
+from prmods.domain.ods_portal.organisation_metadata import (
+    construct_practice_metadata_from_ods_portal_response,
+    construct_asid_to_ods_mappings,
+    construct_ccg_metadata_from_ods_portal_response,
+    construct_organisation_metadata_from_practice_and_ccg_lists,
+)
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
-from prmods.domain.ods_portal.sources import (
+from prmods.domain.ods_portal.ods_data_fetcher import (
     OdsDataFetcher,
-    construct_organisation_metadata_from_practice_and_ccg_lists,
     PRACTICE_SEARCH_PARAMS,
     CCG_SEARCH_PARAMS,
-    construct_practice_metadata_from_ods_portal_response,
-    construct_ccg_metadata_from_ods_portal_response,
-    construct_asid_to_ods_mappings,
 )
 from prmods.utils.io.s3 import S3DataManager
 
