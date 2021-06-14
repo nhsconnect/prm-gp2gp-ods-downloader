@@ -38,6 +38,10 @@ class OdsDataFetcher:
         response_data = list(self._iterate_organisation_data(params))
         return response_data
 
+    def fetch_ccg_practice_data(self, params):
+        response_data = list(self._iterate_organisation_data(params))
+        return response_data
+
     def _iterate_organisation_data(self, params):
         try:
             response = self._client.get(self._search_url, params)

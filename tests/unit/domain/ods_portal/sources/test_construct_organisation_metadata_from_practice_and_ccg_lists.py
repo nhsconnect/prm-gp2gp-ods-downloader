@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from prmods.domain.ods_portal.organisation_metadata import CcgDetails, PracticeDetails
 from prmods.domain.ods_portal.organisation_metadata import (
-    construct_organisation_metadata_from_practice_and_ccg_lists,
+    OrganisationMetadataConstructor
 )
 
 
@@ -14,7 +14,7 @@ def test_has_correct_generated_on_timestamp_given_time():
     empty_list = []
 
     expected_generated_on = datetime(year=2019, month=6, day=2, hour=23, second=42, tzinfo=tzutc())
-    actual = construct_organisation_metadata_from_practice_and_ccg_lists(empty_list, empty_list)
+    actual = create_organisation_metadata_from_practice_and_ccg_lists(empty_list, empty_list)
 
     assert actual.generated_on == expected_generated_on
 
@@ -32,7 +32,7 @@ def test_returns_multiple_practices_and_ccgs():
         CcgDetails(ods_code="56A", name="CCG 3", practices=[]),
     ]
 
-    actual = construct_organisation_metadata_from_practice_and_ccg_lists(
+    actual = create_organisation_metadata_from_practice_and_ccg_lists(
         practice_metadata, ccg_metadata
     )
 
