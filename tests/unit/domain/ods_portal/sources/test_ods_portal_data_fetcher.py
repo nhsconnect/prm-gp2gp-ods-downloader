@@ -57,3 +57,25 @@ def test_fetch_all_ccgs_returns_a_list_of_organisation_details():
             "Limit": "1000",
         }
     )
+
+
+def test_fetch_practices_for_ccg_returns_a_list_of_organisation_details():
+    mock_ods_client = Mock()
+    mock_ods_client.fetch_organisation_data.return_value = [
+        build_ods_organisation_data_response(name="GP Practice", org_id="A12345"),
+        build_ods_organisation_data_response(name="GP Practice 2", org_id="B12345"),
+    ]
+
+    ods_portal_data_fetcher = OdsPortalDataFetcher(ods_client=mock_ods_client)
+
+    expected = [
+        OrganisationDetails(name="GP Practice", ods_code="A12345"),
+        OrganisationDetails(name="GP Practice 2", ods_code="B12345"),
+    ]
+
+    actual = ods_portal_data_fetcher.fetch_practices_for_ccg("12A")
+
+    assert actual == expected
+    mock_ods_client.fetch_organisation_data.assert_called_once_with(
+        {"RelTypeId": "RE4", "RelStatus": "active", "Limit": "1000", "TargetOrgId": "12A"}
+    )

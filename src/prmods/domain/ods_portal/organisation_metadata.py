@@ -6,11 +6,11 @@ from dateutil.tz import tzutc
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.ods_portal_client import (
     OdsPortalClient,
-    CCG_PRACTICES_SEARCH_PARAMS,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import (
     PRACTICE_SEARCH_PARAMS,
     CCG_SEARCH_PARAMS,
+    CCG_PRACTICES_SEARCH_PARAMS,
 )
 
 

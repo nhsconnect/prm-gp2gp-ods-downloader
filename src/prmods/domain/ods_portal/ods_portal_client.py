@@ -3,13 +3,6 @@ import requests
 
 
 ODS_PORTAL_SEARCH_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations"
-
-CCG_PRACTICES_SEARCH_PARAMS = {
-    "RelTypeId": "RE4",
-    "RelStatus": "active",
-    "Limit": "1000",
-}
-
 NEXT_PAGE_HEADER = "Next-Page"
 
 
