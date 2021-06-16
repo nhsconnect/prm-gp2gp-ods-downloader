@@ -40,7 +40,7 @@ def main():
     s3_manager = S3DataManager(s3)
 
     raw_asid_lookup = s3_manager.read_gzip_csv(asid_lookup_s3_path)
-    asid_lookup = AsidLookup(raw_asid_lookup)
+    asid_lookup = AsidLookup.from_spine_directory_format(raw_asid_lookup)
 
     ods_client = OdsPortalClient(search_url=config.search_url)
     organisation_metadata_constructor = OrganisationMetadataConstructor(ods_client, asid_lookup)

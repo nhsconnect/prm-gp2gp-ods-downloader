@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from prmods.domain.ods_portal.asid_lookup import AsidLookup
+from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 from prmods.domain.ods_portal.organisation_metadata import PracticeDetails, PracticeDetailsList
 from tests.builders.ods_portal import build_mock_response
@@ -15,9 +15,8 @@ def test_returns_single_practice():
     )
     mock_http_client.get.side_effect = [mock_practice_response]
 
-    raw_asid_lookup = [{"ASID": "123456781234", "NACS": "A12345"}]
+    asid_lookup = AsidLookup([OdsAsid(ods_code="A12345", asid="123456781234")])
 
-    asid_lookup = AsidLookup(raw_asid_lookup)
     ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     expected_practices = [
@@ -40,13 +39,13 @@ def test_returns_multiple_practices():
     )
     mock_http_client.get.side_effect = [mock_practice_response]
 
-    raw_asid_lookup = [
-        {"ASID": "123456781234", "NACS": "A12345"},
-        {"ASID": "443456781234", "NACS": "B56789"},
-        {"ASID": "773456781234", "NACS": "C56789"},
-    ]
-
-    asid_lookup = AsidLookup(raw_asid_lookup)
+    asid_lookup = AsidLookup(
+        [
+            OdsAsid(ods_code="A12345", asid="123456781234"),
+            OdsAsid(ods_code="B56789", asid="443456781234"),
+            OdsAsid(ods_code="C56789", asid="773456781234"),
+        ]
+    )
     ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     expected_practices = [
@@ -70,9 +69,12 @@ def test_returns_unique_practices():
     )
     mock_http_client.get.side_effect = [mock_practice_response]
 
-    raw_asid_lookup = [{"ASID": "123456781234", "NACS": "A12345"}]
+    asid_lookup = AsidLookup(
+        [
+            OdsAsid(ods_code="A12345", asid="123456781234"),
+        ]
+    )
 
-    asid_lookup = AsidLookup(raw_asid_lookup)
     ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     actual = PracticeDetailsList().create_practice_metadata_from_ods_portal_response(
@@ -90,9 +92,11 @@ def test_skips_practice_and_warns_when_ods_not_in_asid_mapping():
     )
     mock_http_client.get.side_effect = [mock_practice_response]
 
-    raw_asid_lookup = [{"ASID": "123456781234", "NACS": "A12345"}]
-
-    asid_lookup = AsidLookup(raw_asid_lookup)
+    asid_lookup = AsidLookup(
+        [
+            OdsAsid(ods_code="A12345", asid="123456781234"),
+        ]
+    )
     ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     expected_practices = [
@@ -114,12 +118,12 @@ def test_returns_single_practice_with_multiple_asids():
     )
     mock_http_client.get.side_effect = [mock_practice_response]
 
-    raw_asid_lookup = [
-        {"ASID": "123456781234", "NACS": "A12345"},
-        {"ASID": "654321234564", "NACS": "A12345"},
-    ]
-
-    asid_lookup = AsidLookup(raw_asid_lookup)
+    asid_lookup = AsidLookup(
+        [
+            OdsAsid(ods_code="A12345", asid="123456781234"),
+            OdsAsid(ods_code="A12345", asid="654321234564"),
+        ]
+    )
     ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     expected_practices = [

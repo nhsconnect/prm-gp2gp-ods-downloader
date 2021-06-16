@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from dateutil.tz import tzutc
 from freezegun import freeze_time
 
-from prmods.domain.ods_portal.asid_lookup import AsidLookup
+from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.organisation_metadata import CcgDetails, PracticeDetails
 from prmods.domain.ods_portal.organisation_metadata import OrganisationMetadataConstructor
 from tests.builders.ods_portal import build_ods_organisation_data_response
@@ -60,9 +60,9 @@ def test_returns_multiple_practices_and_ccgs():
 
     asid_lookup = AsidLookup(
         [
-            {"ASID": "123456781234", "NACS": "A12345"},
-            {"ASID": "443456781234", "NACS": "B56789"},
-            {"ASID": "773456781234", "NACS": "C56789"},
+            OdsAsid(ods_code="A12345", asid="123456781234"),
+            OdsAsid(ods_code="B56789", asid="443456781234"),
+            OdsAsid(ods_code="C56789", asid="773456781234"),
         ]
     )
 
