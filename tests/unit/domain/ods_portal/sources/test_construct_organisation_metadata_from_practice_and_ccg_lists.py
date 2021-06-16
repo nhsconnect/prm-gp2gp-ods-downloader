@@ -68,10 +68,12 @@ def test_returns_multiple_practices_and_ccgs():
 
     mock_data_fetcher = Mock()
 
-    mock_data_fetcher.fetch_ccg_practice_data.return_value = []
     mock_data_fetcher.fetch_organisation_data.side_effect = [
         practice_metadata_response,
         ccg_metadata_response,
+        [],
+        [],
+        [],
     ]
 
     org_metadata_constructor = OrganisationMetadataConstructor(mock_data_fetcher, asid_lookup)

@@ -84,7 +84,7 @@ class OrganisationMetadataConstructor:
     ) -> List[str]:
         CCG_PRACTICES_SEARCH_PARAMS.update({"TargetOrgId": ccg_ods_code})
 
-        ccg_practices_response = data_fetcher.fetch_ccg_practice_data(CCG_PRACTICES_SEARCH_PARAMS)
+        ccg_practices_response = data_fetcher.fetch_organisation_data(CCG_PRACTICES_SEARCH_PARAMS)
         ccg_practices = [p["OrgId"] for p in ccg_practices_response]
         return ccg_practices
 
