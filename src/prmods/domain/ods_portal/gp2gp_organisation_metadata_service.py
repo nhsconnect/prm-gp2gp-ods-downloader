@@ -1,7 +1,11 @@
 from typing import List
+from warnings import warn
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
-from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
+from prmods.domain.ods_portal.ods_portal_data_fetcher import (
+    OdsPortalDataFetcher,
+    OrganisationDetails,
+)
 from prmods.domain.ods_portal.organisation_metadata import PracticeDetails
 
 
@@ -11,13 +15,16 @@ class Gp2gpOrganisationMetadataService:
 
     def retrieve_practices_with_asids(self, asid_lookup: AsidLookup) -> List[PracticeDetails]:
         practices = self._data_fetcher.fetch_all_practices()
+        return list(self._enrich_practices_with_asids(practices, asid_lookup))
 
-        return [
-            PracticeDetails(
-                asids=asid_lookup.get_asids(practice.ods_code),
-                ods_code=practice.ods_code,
-                name=practice.name,
-            )
-            for practice in practices
-            if asid_lookup.has_ods(practice.ods_code)
-        ]
+    @staticmethod
+    def _enrich_practices_with_asids(practices: List[OrganisationDetails], asid_lookup: AsidLookup):
+        for practice in practices:
+            if asid_lookup.has_ods(practice.ods_code):
+                yield PracticeDetails(
+                    asids=asid_lookup.get_asids(practice.ods_code),
+                    ods_code=practice.ods_code,
+                    name=practice.name,
+                )
+            else:
+                warn(f"ODS code not found in ASID mapping: {practice.ods_code}", RuntimeWarning)

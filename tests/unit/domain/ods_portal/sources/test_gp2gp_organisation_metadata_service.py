@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
+
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.gp2gp_organisation_metadata_service import (
     Gp2gpOrganisationMetadataService,
@@ -70,5 +72,27 @@ def test_returns_single_practice_with_multiple_asids():
         )
     ]
     actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    assert actual == expected
+
+
+def test_skips_practice_and_warns_when_ods_not_in_asid_mapping():
+    mock_data_fetcher = Mock()
+    mock_data_fetcher.fetch_all_practices.return_value = [
+        OrganisationDetails(ods_code="A12345", name="GP Practice"),
+        OrganisationDetails(ods_code="B12345", name="GP Practice 2"),
+    ]
+
+    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    asid_lookup = AsidLookup(
+        [
+            OdsAsid(ods_code="B12345", asid="123456781234"),
+        ]
+    )
+
+    expected = [PracticeDetails(asids=["123456781234"], ods_code="B12345", name="GP Practice 2")]
+
+    with pytest.warns(RuntimeWarning):
+        actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
 
     assert actual == expected
