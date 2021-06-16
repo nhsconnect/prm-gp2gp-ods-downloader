@@ -96,3 +96,19 @@ def test_skips_practice_and_warns_when_ods_not_in_asid_mapping():
         actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
 
     assert actual == expected
+
+
+def test_returns_unique_practices():
+    mock_data_fetcher = Mock()
+    mock_data_fetcher.fetch_all_practices.return_value = [
+        OrganisationDetails(name="GP Practice", ods_code="A12345"),
+        OrganisationDetails(name="GP Practice 2", ods_code="A12345"),
+    ]
+
+    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    asid_lookup = AsidLookup([OdsAsid("A12345", "123456789123")])
+
+    expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
+    actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    assert actual == expected
