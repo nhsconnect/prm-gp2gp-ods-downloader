@@ -10,8 +10,8 @@ from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.organisation_metadata import OrganisationMetadataConstructor
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
-from prmods.domain.ods_portal.ods_data_fetcher import (
-    OdsDataFetcher,
+from prmods.domain.ods_portal.ods_portal_client import (
+    OdsPortalClient,
 )
 from prmods.utils.io.s3 import S3DataManager
 
@@ -42,8 +42,8 @@ def main():
     raw_asid_lookup = s3_manager.read_gzip_csv(asid_lookup_s3_path)
     asid_lookup = AsidLookup(raw_asid_lookup)
 
-    data_fetcher = OdsDataFetcher(search_url=config.search_url)
-    organisation_metadata_constructor = OrganisationMetadataConstructor(data_fetcher, asid_lookup)
+    ods_client = OdsPortalClient(search_url=config.search_url)
+    organisation_metadata_constructor = OrganisationMetadataConstructor(ods_client, asid_lookup)
 
     organisation_metadata = (
         organisation_metadata_constructor.create_organisation_metadata_from_practice_and_ccg_lists()

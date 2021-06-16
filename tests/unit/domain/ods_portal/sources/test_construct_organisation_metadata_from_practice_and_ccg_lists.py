@@ -15,10 +15,10 @@ def test_has_correct_generated_on_timestamp_given_time():
     expected_generated_on = datetime(year=2019, month=6, day=2, hour=23, second=42, tzinfo=tzutc())
 
     mock_asid_lookup = Mock()
-    mock_data_fetcher = Mock()
-    mock_data_fetcher.fetch_organisation_data.return_value = []
+    mock_ods_client = Mock()
+    mock_ods_client.fetch_organisation_data.return_value = []
 
-    org_metadata_constructor = OrganisationMetadataConstructor(mock_data_fetcher, mock_asid_lookup)
+    org_metadata_constructor = OrganisationMetadataConstructor(mock_ods_client, mock_asid_lookup)
     actual = org_metadata_constructor.create_organisation_metadata_from_practice_and_ccg_lists()
 
     assert actual.generated_on == expected_generated_on
@@ -66,9 +66,9 @@ def test_returns_multiple_practices_and_ccgs():
         ]
     )
 
-    mock_data_fetcher = Mock()
+    mock_ods_client = Mock()
 
-    mock_data_fetcher.fetch_organisation_data.side_effect = [
+    mock_ods_client.fetch_organisation_data.side_effect = [
         practice_metadata_response,
         ccg_metadata_response,
         [],
@@ -76,7 +76,7 @@ def test_returns_multiple_practices_and_ccgs():
         [],
     ]
 
-    org_metadata_constructor = OrganisationMetadataConstructor(mock_data_fetcher, asid_lookup)
+    org_metadata_constructor = OrganisationMetadataConstructor(mock_ods_client, asid_lookup)
 
     actual = org_metadata_constructor.create_organisation_metadata_from_practice_and_ccg_lists()
 

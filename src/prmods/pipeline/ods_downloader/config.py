@@ -5,7 +5,7 @@ import logging
 from typing import Optional
 
 from dateutil.parser import isoparse
-from prmods.domain.ods_portal.ods_data_fetcher import ODS_PORTAL_SEARCH_URL
+from prmods.domain.ods_portal.ods_portal_client import ODS_PORTAL_SEARCH_URL
 
 logger = logging.getLogger(__name__)
 

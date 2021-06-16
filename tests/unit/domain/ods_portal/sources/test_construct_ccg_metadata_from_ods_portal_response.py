@@ -5,21 +5,21 @@ from prmods.domain.ods_portal.organisation_metadata import (
     CcgDetails,
     OrganisationMetadataConstructor,
 )
-from prmods.domain.ods_portal.ods_data_fetcher import OdsDataFetcher
+from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 from tests.builders.ods_portal import build_mock_response
 
 
 def test_returns_single_ccg():
-    mock_client = MagicMock()
+    mock_http_client = MagicMock()
     mock_ccg_response = build_mock_response(
         content=b'{"Organisations": [{"Name": "CCG", "OrgId": "12C"}]}'
     )
     mock_ccg_practice_response = build_mock_response(content=b'{"Organisations": []}')
-    mock_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
-    data_fetcher = OdsDataFetcher(mock_client, search_url="https://test.com/")
+    mock_http_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
+    ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     organisation_metadata_constructor = OrganisationMetadataConstructor(
-        data_fetcher, asid_lookup=AsidLookup([])
+        ods_client, asid_lookup=AsidLookup([])
     )
 
     expected_ccgs = [CcgDetails(ods_code="12C", name="CCG", practices=[])]
@@ -30,17 +30,17 @@ def test_returns_single_ccg():
 
 
 def test_returns_unique_ccgs():
-    mock_client = MagicMock()
+    mock_http_client = MagicMock()
     mock_ccg_response = build_mock_response(
         content=b'{"Organisations": [{"Name": "CCG", "OrgId": "12A"},'
         b'{"Name": "Another CCG", "OrgId": "12A"}]}'
     )
     mock_ccg_practice_response = build_mock_response(content=b'{"Organisations": []}')
-    mock_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
-    data_fetcher = OdsDataFetcher(mock_client, search_url="https://test.com/")
+    mock_http_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
+    ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     organisation_metadata_constructor = OrganisationMetadataConstructor(
-        data_fetcher, asid_lookup=AsidLookup([])
+        ods_client, asid_lookup=AsidLookup([])
     )
 
     actual = organisation_metadata_constructor.create_ccg_metadata_from_ods_portal_response()
@@ -49,19 +49,19 @@ def test_returns_unique_ccgs():
 
 
 def test_returns_practice_ods_code_for_a_ccg():
-    mock_client = MagicMock()
+    mock_http_client = MagicMock()
     mock_ccg_response = build_mock_response(
         content=b'{"Organisations": [{"Name": "CCG", "OrgId": "12A"}]}'
     )
     mock_ccg_practice_response = build_mock_response(
         content=b'{"Organisations": [{"Name": "GP Practice", "OrgId": "A12345"}]}'
     )
-    mock_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
+    mock_http_client.get.side_effect = [mock_ccg_response, mock_ccg_practice_response]
 
-    data_fetcher = OdsDataFetcher(mock_client, search_url="https://test.com/")
+    ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     organisation_metadata_constructor = OrganisationMetadataConstructor(
-        data_fetcher, asid_lookup=AsidLookup([])
+        ods_client, asid_lookup=AsidLookup([])
     )
 
     actual = organisation_metadata_constructor.create_ccg_metadata_from_ods_portal_response()
@@ -70,7 +70,7 @@ def test_returns_practice_ods_code_for_a_ccg():
 
 
 def test_returns_multiple_ccgs_with_multiple_practices():
-    mock_client = MagicMock()
+    mock_http_client = MagicMock()
     mock_ccg_response = build_mock_response(
         content=b'{"Organisations": [{"Name": "CCG", "OrgId": "12A"},'
         b'{"Name": "CCG 2", "OrgId": "34A"},'
@@ -85,16 +85,16 @@ def test_returns_multiple_ccgs_with_multiple_practices():
         b'{"Name": "GP Practice 5", "OrgId": "E98765"}, '
         b'{"Name": "GP Practice 6", "OrgId": "F23456"}]}'
     )
-    mock_client.get.side_effect = [
+    mock_http_client.get.side_effect = [
         mock_ccg_response,
         mock_ccg_practice_response_1,
         mock_ccg_practice_response_2,
         mock_ccg_practice_response_3,
     ]
-    data_fetcher = OdsDataFetcher(mock_client, search_url="https://test.com/")
+    ods_client = OdsPortalClient(mock_http_client, search_url="https://test.com/")
 
     organisation_metadata_constructor = OrganisationMetadataConstructor(
-        data_fetcher, asid_lookup=AsidLookup([])
+        ods_client, asid_lookup=AsidLookup([])
     )
 
     expected_ccgs = [
@@ -106,4 +106,4 @@ def test_returns_multiple_ccgs_with_multiple_practices():
     actual = organisation_metadata_constructor.create_ccg_metadata_from_ods_portal_response()
 
     assert actual == expected_ccgs
-    assert mock_client.get.call_count == 4
+    assert mock_http_client.get.call_count == 4

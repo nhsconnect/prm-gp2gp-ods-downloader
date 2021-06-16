@@ -4,8 +4,8 @@ from typing import List, Iterable
 from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
-from prmods.domain.ods_portal.ods_data_fetcher import (
-    OdsDataFetcher,
+from prmods.domain.ods_portal.ods_portal_client import (
+    OdsPortalClient,
     CCG_PRACTICES_SEARCH_PARAMS,
     PRACTICE_SEARCH_PARAMS,
     CCG_SEARCH_PARAMS,
@@ -28,9 +28,9 @@ class PracticeDetails:
 
 class PracticeDetailsList:
     def create_practice_metadata_from_ods_portal_response(
-        self, data_fetcher: OdsDataFetcher, asid_lookup: AsidLookup
+        self, ods_client: OdsPortalClient, asid_lookup: AsidLookup
     ) -> List[PracticeDetails]:
-        practice_data_response = data_fetcher.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
+        practice_data_response = ods_client.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
         unique_practices = OrganisationMetadataConstructor.remove_duplicated_organisations(
             practice_data_response
         )
@@ -52,13 +52,13 @@ class OrganisationMetadata:
 
 
 class OrganisationMetadataConstructor:
-    def __init__(self, data_fetcher: OdsDataFetcher, asid_lookup: AsidLookup):
-        self._data_fetcher = data_fetcher
+    def __init__(self, ods_client: OdsPortalClient, asid_lookup: AsidLookup):
+        self._ods_client = ods_client
         self.asid_lookup = asid_lookup
 
     def create_organisation_metadata_from_practice_and_ccg_lists(self) -> OrganisationMetadata:
         practice_metadata = PracticeDetailsList().create_practice_metadata_from_ods_portal_response(
-            self._data_fetcher, self.asid_lookup
+            self._ods_client, self.asid_lookup
         )
         ccg_metadata = self.create_ccg_metadata_from_ods_portal_response()
 
@@ -67,24 +67,24 @@ class OrganisationMetadataConstructor:
         )
 
     def create_ccg_metadata_from_ods_portal_response(self) -> List[CcgDetails]:
-        ccg_data_response = self._data_fetcher.fetch_organisation_data(CCG_SEARCH_PARAMS)
+        ccg_data_response = self._ods_client.fetch_organisation_data(CCG_SEARCH_PARAMS)
         unique_ccgs = self.remove_duplicated_organisations(ccg_data_response)
 
         return [
             CcgDetails(
                 ods_code=c["OrgId"],
                 name=c["Name"],
-                practices=self._fetch_practices_for_a_ccg(c["OrgId"], self._data_fetcher),
+                practices=self._fetch_practices_for_a_ccg(c["OrgId"], self._ods_client),
             )
             for c in unique_ccgs
         ]
 
     def _fetch_practices_for_a_ccg(
-        self, ccg_ods_code: str, data_fetcher: OdsDataFetcher
+        self, ccg_ods_code: str, ods_client: OdsPortalClient
     ) -> List[str]:
         CCG_PRACTICES_SEARCH_PARAMS.update({"TargetOrgId": ccg_ods_code})
 
-        ccg_practices_response = data_fetcher.fetch_organisation_data(CCG_PRACTICES_SEARCH_PARAMS)
+        ccg_practices_response = ods_client.fetch_organisation_data(CCG_PRACTICES_SEARCH_PARAMS)
         ccg_practices = [p["OrgId"] for p in ccg_practices_response]
         return ccg_practices
 
