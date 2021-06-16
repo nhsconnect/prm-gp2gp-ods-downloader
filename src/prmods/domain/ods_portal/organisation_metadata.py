@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Iterable
+from warnings import warn
+
 from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
@@ -28,6 +30,18 @@ class PracticeDetails:
     asids: List[str]
 
 
+def _construct_practice_details(practices, asid_lookup):
+    for practice in practices:
+        practice_ods = practice["OrgId"]
+        practice_name = practice["Name"]
+        if asid_lookup.has_ods(practice_ods):
+            yield PracticeDetails(
+                asids=asid_lookup.get_asids(practice_ods), ods_code=practice_ods, name=practice_name
+            )
+        else:
+            warn(f"ODS code not found in ASID mapping: {practice_ods}", RuntimeWarning)
+
+
 class PracticeDetailsList:
     def create_practice_metadata_from_ods_portal_response(
         self, ods_client: OdsPortalClient, asid_lookup: AsidLookup
@@ -36,14 +50,7 @@ class PracticeDetailsList:
         unique_practices = OrganisationMetadataConstructor.remove_duplicated_organisations(
             practice_data_response
         )
-
-        return [
-            PracticeDetails(
-                asids=asid_lookup.get_asids(p["OrgId"]), ods_code=p["OrgId"], name=p["Name"]
-            )
-            for p in unique_practices
-            if asid_lookup.has_ods(p["OrgId"])
-        ]
+        return list(_construct_practice_details(unique_practices, asid_lookup))
 
 
 @dataclass

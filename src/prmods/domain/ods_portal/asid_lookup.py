@@ -1,4 +1,3 @@
-from _warnings import warn
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Iterable, DefaultDict
@@ -19,11 +18,7 @@ class AsidLookup:
         self._ods_asid_mapping = _construct_ods_asid_mapping(mappings)
 
     def has_ods(self, ods_code: str):
-        if ods_code in self._ods_asid_mapping:
-            return True
-        else:
-            warn(f"ODS code not found in ASID mapping: {ods_code}", RuntimeWarning)
-            return False
+        return ods_code in self._ods_asid_mapping
 
     def get_asids(self, ods_code):
         return self._ods_asid_mapping[ods_code]
