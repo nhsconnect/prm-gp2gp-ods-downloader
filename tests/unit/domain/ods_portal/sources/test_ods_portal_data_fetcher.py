@@ -31,3 +31,29 @@ def test_fetch_all_practices_returns_a_list_of_organisation_details():
             "Limit": "1000",
         }
     )
+
+
+def test_fetch_all_ccgs_returns_a_list_of_organisation_details():
+    mock_ods_client = Mock()
+    mock_ods_client.fetch_organisation_data.return_value = [
+        build_ods_organisation_data_response(name="CCG", org_id="12A"),
+        build_ods_organisation_data_response(name="CCG 2", org_id="34B"),
+    ]
+
+    ods_portal_data_fetcher = OdsPortalDataFetcher(ods_client=mock_ods_client)
+
+    expected = [
+        OrganisationDetails(name="CCG", ods_code="12A"),
+        OrganisationDetails(name="CCG 2", ods_code="34B"),
+    ]
+
+    actual = ods_portal_data_fetcher.fetch_all_ccgs()
+
+    assert actual == expected
+    mock_ods_client.fetch_organisation_data.assert_called_once_with(
+        {
+            "PrimaryRoleId": "RO98",
+            "Status": "Active",
+            "Limit": "1000",
+        }
+    )

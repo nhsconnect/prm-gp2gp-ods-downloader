@@ -16,14 +16,26 @@ PRACTICE_SEARCH_PARAMS = {
     "Limit": "1000",
 }
 
+CCG_SEARCH_PARAMS = {
+    "PrimaryRoleId": "RO98",
+    "Status": "Active",
+    "Limit": "1000",
+}
+
 
 class OdsPortalDataFetcher:
     def __init__(self, ods_client: OdsPortalClient):
         self._ods_client = ods_client
 
     def fetch_all_practices(self):
-        practice_data_response = self._ods_client.fetch_organisation_data(PRACTICE_SEARCH_PARAMS)
+        return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS)
+
+    def fetch_all_ccgs(self):
+        return self._fetch_organisation_details(CCG_SEARCH_PARAMS)
+
+    def _fetch_organisation_details(self, params):
+        response = self._ods_client.fetch_organisation_data(params)
         return [
-            OrganisationDetails(name=practice["Name"], ods_code=practice["OrgId"])
-            for practice in practice_data_response
+            OrganisationDetails(name=organisation["Name"], ods_code=organisation["OrgId"])
+            for organisation in response
         ]
