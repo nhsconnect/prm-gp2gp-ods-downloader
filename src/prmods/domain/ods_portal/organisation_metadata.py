@@ -39,10 +39,10 @@ class PracticeDetailsList:
 
         return [
             PracticeDetails(
-                asids=asid_lookup.ods_asid_mapping[p["OrgId"]], ods_code=p["OrgId"], name=p["Name"]
+                asids=asid_lookup.get_asids(p["OrgId"]), ods_code=p["OrgId"], name=p["Name"]
             )
             for p in unique_practices
-            if asid_lookup.is_ods_in_mapping(p["OrgId"])
+            if asid_lookup.has_ods(p["OrgId"])
         ]
 
 

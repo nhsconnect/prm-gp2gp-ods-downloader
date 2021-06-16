@@ -16,14 +16,17 @@ class AsidLookup:
         return cls([OdsAsid(row["NACS"], row["ASID"]) for row in rows])
 
     def __init__(self, mappings: Iterable[OdsAsid]):
-        self.ods_asid_mapping = _construct_ods_asid_mapping(mappings)
+        self._ods_asid_mapping = _construct_ods_asid_mapping(mappings)
 
-    def is_ods_in_mapping(self, ods_code: str):
-        if ods_code in self.ods_asid_mapping:
+    def has_ods(self, ods_code: str):
+        if ods_code in self._ods_asid_mapping:
             return True
         else:
             warn(f"ODS code not found in ASID mapping: {ods_code}", RuntimeWarning)
             return False
+
+    def get_asids(self, ods_code):
+        return self._ods_asid_mapping[ods_code]
 
 
 def _construct_ods_asid_mapping(mappings: Iterable[OdsAsid]) -> defaultdict:
