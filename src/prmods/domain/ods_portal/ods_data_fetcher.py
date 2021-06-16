@@ -43,15 +43,12 @@ class OdsDataFetcher:
         return response_data
 
     def _iterate_organisation_data(self, params):
-        try:
-            response = self._client.get(self._search_url, params)
-            yield from self._process_practice_data_response(response)
+        response = self._client.get(self._search_url, params)
+        yield from self._process_practice_data_response(response)
 
-            while NEXT_PAGE_HEADER in response.headers:
-                response = self._client.get(response.headers[NEXT_PAGE_HEADER])
-                yield from self._process_practice_data_response(response)
-        except StopIteration:
-            pass
+        while NEXT_PAGE_HEADER in response.headers:
+            response = self._client.get(response.headers[NEXT_PAGE_HEADER])
+            yield from self._process_practice_data_response(response)
 
     @classmethod
     def _process_practice_data_response(cls, response):
