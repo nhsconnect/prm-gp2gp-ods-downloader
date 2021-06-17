@@ -1,13 +1,15 @@
+from dataclasses import dataclass
+from typing import List, Iterable
 from unittest.mock import Mock
 
 import pytest
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
-from prmods.domain.ods_portal.gp2gp_organisation_metadata_service import (
+from prmods.domain.ods_portal.metadata_service import (
     Gp2gpOrganisationMetadataService,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
-from prmods.domain.ods_portal.organisation_metadata import PracticeDetails
+from prmods.domain.ods_portal.organisation_metadata import PracticeDetails, CcgDetails
 
 
 def test_returns_single_practice():
@@ -110,5 +112,45 @@ def test_returns_unique_practices():
 
     expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
     actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    assert actual == expected
+
+
+@dataclass
+class CCGPracticeAllocation:
+    ccg: OrganisationDetails
+    practices: List[OrganisationDetails]
+
+
+class FakeDataFetcher:
+    def __init__(self, ccgs: Iterable[CCGPracticeAllocation]):
+        self._ccgs = [allocation.ccg for allocation in ccgs]
+        self._practices_by_ccg_ods = {
+            allocation.ccg.ods_code: allocation.practices for allocation in ccgs
+        }
+
+    def fetch_all_ccgs(self) -> List[OrganisationDetails]:
+        return self._ccgs
+
+    def fetch_practices_for_ccg(self, ccg_ods_code: str) -> List[OrganisationDetails]:
+        return self._practices_by_ccg_ods[ccg_ods_code]
+
+
+def test_returns_single_ccg_with_one_practice():
+
+    fake_data_fetcher = FakeDataFetcher(
+        ccgs=[
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="X12", name="CCG"),
+                practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
+            )
+        ]
+    )
+
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+
+    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
+
+    actual = metadata_service.retrieve_ccg_practice_allocations()
 
     assert actual == expected

@@ -6,7 +6,7 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import (
     OdsPortalDataFetcher,
     OrganisationDetails,
 )
-from prmods.domain.ods_portal.organisation_metadata import PracticeDetails
+from prmods.domain.ods_portal.organisation_metadata import PracticeDetails, CcgDetails
 
 
 class Gp2gpOrganisationMetadataService:
@@ -15,9 +15,21 @@ class Gp2gpOrganisationMetadataService:
 
     def retrieve_practices_with_asids(self, asid_lookup: AsidLookup) -> List[PracticeDetails]:
         practices = self._data_fetcher.fetch_all_practices()
-        unique_practices = self._remove_duplicated_organisations(practices)
+        unique_practices = self._remove_duplicate_organisations(practices)
 
         return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
+
+    def retrieve_ccg_practice_allocations(self) -> List[CcgDetails]:
+        ccgs = self._data_fetcher.fetch_all_ccgs()
+        return [self._fetch_ccg_practice_allocation(ccg) for ccg in ccgs]
+
+    def _fetch_ccg_practice_allocation(self, ccg):
+        ccg_practices = self._data_fetcher.fetch_practices_for_ccg(ccg.ods_code)
+        return CcgDetails(
+            ods_code=ccg.ods_code,
+            name=ccg.name,
+            practices=[practice.ods_code for practice in ccg_practices],
+        )
 
     @staticmethod
     def _enrich_practices_with_asids(
@@ -34,7 +46,7 @@ class Gp2gpOrganisationMetadataService:
                 warn(f"ODS code not found in ASID mapping: {practice.ods_code}", RuntimeWarning)
 
     @staticmethod
-    def _remove_duplicated_organisations(
+    def _remove_duplicate_organisations(
         practices: List[OrganisationDetails],
     ) -> Iterable[OrganisationDetails]:
         seen_ods = set()
