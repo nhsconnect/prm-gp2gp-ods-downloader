@@ -1,7 +1,5 @@
 import json
-from http.server import BaseHTTPRequestHandler
 from io import BytesIO
-from urllib.parse import parse_qs
 
 import boto3
 
@@ -9,6 +7,7 @@ from os import environ
 from threading import Thread
 from botocore.config import Config
 from moto.server import DomainDispatcherApplication, create_backend_app
+from werkzeug import Response, Request
 from werkzeug.serving import make_server
 
 from prmods.pipeline.ods_downloader.main import main
@@ -87,28 +86,28 @@ class ThreadedServer:
         self._thread.join()
 
 
-class MockOdsRequestHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        parsed_params = parse_qs(self.path[2:])
-        primary_role = parsed_params.get("PrimaryRoleId")
-        target_org_id = parsed_params.get("TargetOrgId")
+@Request.application
+def fake_ods_application(request):
+    primary_role = request.args.get("PrimaryRoleId")
+    target_org_id = request.args.get("TargetOrgId")
 
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.end_headers()
-        self.wfile.write(self._get_mock_response(primary_role, target_org_id))
+    return Response(
+        _get_fake_response(primary_role, target_org_id),
+        mimetype="application/json",
+    )
 
-    def _get_mock_response(self, primary_role, target_org_id):
-        if primary_role and primary_role[0] == "RO177":
-            return MOCK_PRACTICE_RESPONSE_CONTENT
-        elif target_org_id and target_org_id[0] == "12A":
-            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1
-        elif target_org_id and target_org_id[0] == "13B":
-            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2
-        elif target_org_id and target_org_id[0] == "14C":
-            return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3
-        else:
-            return MOCK_CCG_RESPONSE_CONTENT
+
+def _get_fake_response(primary_role, target_org_id):
+    if primary_role == "RO177":
+        return MOCK_PRACTICE_RESPONSE_CONTENT
+    elif target_org_id == "12A":
+        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1
+    elif target_org_id == "13B":
+        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2
+    elif target_org_id == "14C":
+        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3
+    else:
+        return MOCK_CCG_RESPONSE_CONTENT
 
 
 def _build_fake_s3(host, port):
@@ -118,7 +117,7 @@ def _build_fake_s3(host, port):
 
 
 def _build_fake_ods(host, port):
-    server = make_server(host, port, request_handler=MockOdsRequestHandler)
+    server = make_server(host, port, fake_ods_application)
     return ThreadedServer(server)
 
 
@@ -130,12 +129,6 @@ def _read_s3_json_file(bucket, key):
 
 
 def test_with_s3():
-    fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
-    fake_s3.start()
-
-    fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
-    fake_ods.start()
-
     s3 = boto3.resource(
         "s3",
         endpoint_url=FAKE_S3_URL,
@@ -160,21 +153,24 @@ def test_with_s3():
     year = 2020
     month = 1
 
-    output_bucket = s3.Bucket(output_bucket_name)
-    output_bucket.create()
-    output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
-
-    main()
-
-    actual = _read_s3_json_file(
-        output_bucket, f"{VERSION}/{year}/{month}/organisationMetadata.json"
-    )
+    fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
+    fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
 
     try:
+        fake_s3.start()
+        fake_ods.start()
+
+        output_bucket = s3.Bucket(output_bucket_name)
+        output_bucket.create()
+        output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
+
+        main()
+
+        actual = _read_s3_json_file(
+            output_bucket, f"{VERSION}/{year}/{month}/organisationMetadata.json"
+        )
         assert actual["practices"] == EXPECTED_PRACTICES
         assert actual["ccgs"] == EXPECTED_CCGS
     finally:
-        output_bucket.objects.all().delete()
-        output_bucket.delete()
         fake_ods.stop()
         fake_s3.stop()
