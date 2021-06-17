@@ -244,7 +244,7 @@ def test_does_not_return_ccg_practice_if_not_on_canonical_list():
             )
         ]
     )
-    canonical_practice_list = []
+    canonical_practice_list: list = []
 
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
 
