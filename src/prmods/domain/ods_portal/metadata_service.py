@@ -21,7 +21,9 @@ class Gp2gpOrganisationMetadataService:
 
     def retrieve_ccg_practice_allocations(self) -> List[CcgDetails]:
         ccgs = self._data_fetcher.fetch_all_ccgs()
-        return [self._fetch_ccg_practice_allocation(ccg) for ccg in ccgs]
+        unique_ccgs = self._remove_duplicate_organisations(ccgs)
+
+        return [self._fetch_ccg_practice_allocation(ccg) for ccg in unique_ccgs]
 
     def _fetch_ccg_practice_allocation(self, ccg):
         ccg_practices = self._data_fetcher.fetch_practices_for_ccg(ccg.ods_code)
@@ -47,10 +49,10 @@ class Gp2gpOrganisationMetadataService:
 
     @staticmethod
     def _remove_duplicate_organisations(
-        practices: List[OrganisationDetails],
+        organisations: List[OrganisationDetails],
     ) -> Iterable[OrganisationDetails]:
         seen_ods = set()
-        for practice in practices:
-            if practice.ods_code not in seen_ods:
-                yield practice
-            seen_ods.add(practice.ods_code)
+        for organisation in organisations:
+            if organisation.ods_code not in seen_ods:
+                yield organisation
+            seen_ods.add(organisation.ods_code)

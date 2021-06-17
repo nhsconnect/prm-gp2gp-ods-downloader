@@ -137,13 +137,70 @@ class FakeDataFetcher:
 
 
 def test_returns_single_ccg_with_one_practice():
-
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
                 ccg=OrganisationDetails(ods_code="X12", name="CCG"),
                 practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
             )
+        ]
+    )
+
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+
+    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
+
+    actual = metadata_service.retrieve_ccg_practice_allocations()
+
+    assert actual == expected
+
+
+def test_returns_multiple_ccgs_with_multiple_practices():
+    fake_data_fetcher = FakeDataFetcher(
+        ccgs=[
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="12A", name="CCG"),
+                practices=[],
+            ),
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="34A", name="CCG 2"),
+                practices=[OrganisationDetails(ods_code="C45678", name="GP Practice")],
+            ),
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="56A", name="CCG 3"),
+                practices=[
+                    OrganisationDetails(ods_code="D34567", name="GP Practice 2"),
+                    OrganisationDetails(ods_code="E98765", name="GP Practice 3"),
+                    OrganisationDetails(ods_code="F23456", name="GP Practice 4"),
+                ],
+            ),
+        ]
+    )
+
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+
+    expected = [
+        CcgDetails(ods_code="12A", name="CCG", practices=[]),
+        CcgDetails(ods_code="34A", name="CCG 2", practices=["C45678"]),
+        CcgDetails(ods_code="56A", name="CCG 3", practices=["D34567", "E98765", "F23456"]),
+    ]
+
+    actual = metadata_service.retrieve_ccg_practice_allocations()
+
+    assert actual == expected
+
+
+def test_returns_unique_ccgs():
+    fake_data_fetcher = FakeDataFetcher(
+        ccgs=[
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="X12", name="CCG"),
+                practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
+            ),
+            CCGPracticeAllocation(
+                ccg=OrganisationDetails(ods_code="X12", name="Another CCG"),
+                practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
+            ),
         ]
     )
 
