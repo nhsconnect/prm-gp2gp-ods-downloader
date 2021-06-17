@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Protocol
 
 from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 
@@ -28,6 +28,17 @@ CCG_PRACTICES_SEARCH_PARAMS = {
     "RelStatus": "active",
     "Limit": "1000",
 }
+
+
+class OdsDataSource(Protocol):
+    def fetch_all_practices(self) -> List[OrganisationDetails]:
+        ...
+
+    def fetch_all_ccgs(self) -> List[OrganisationDetails]:
+        ...
+
+    def fetch_practices_for_ccg(self, ccg_ods_code: str) -> List[OrganisationDetails]:
+        ...
 
 
 class OdsPortalDataFetcher:

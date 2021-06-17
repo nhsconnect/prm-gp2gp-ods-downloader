@@ -125,9 +125,13 @@ class CCGPracticeAllocation:
 class FakeDataFetcher:
     def __init__(self, ccgs: Iterable[CCGPracticeAllocation]):
         self._ccgs = [allocation.ccg for allocation in ccgs]
+        self._practices = [practice for ccg in ccgs for practice in ccg.practices]
         self._practices_by_ccg_ods = {
             allocation.ccg.ods_code: allocation.practices for allocation in ccgs
         }
+
+    def fetch_all_practices(self):
+        return self._practices
 
     def fetch_all_ccgs(self) -> List[OrganisationDetails]:
         return self._ccgs

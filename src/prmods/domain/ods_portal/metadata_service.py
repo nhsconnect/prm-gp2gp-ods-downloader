@@ -6,8 +6,8 @@ from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.ods_portal_data_fetcher import (
-    OdsPortalDataFetcher,
     OrganisationDetails,
+    OdsDataSource,
 )
 
 
@@ -37,7 +37,7 @@ class OrganisationMetadata:
 
 
 class Gp2gpOrganisationMetadataService:
-    def __init__(self, data_fetcher: OdsPortalDataFetcher):
+    def __init__(self, data_fetcher: OdsDataSource):
         self._data_fetcher = data_fetcher
 
     def retrieve_practices_with_asids(self, asid_lookup: AsidLookup) -> List[PracticeDetails]:
