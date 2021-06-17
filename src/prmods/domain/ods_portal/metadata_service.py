@@ -1,12 +1,39 @@
+from dataclasses import dataclass
 from typing import List, Iterable
 from warnings import warn
+from datetime import datetime
+from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.ods_portal_data_fetcher import (
     OdsPortalDataFetcher,
     OrganisationDetails,
 )
-from prmods.domain.ods_portal.organisation_metadata import PracticeDetails, CcgDetails
+
+
+@dataclass
+class CcgDetails:
+    ods_code: str
+    name: str
+    practices: List[str]
+
+
+@dataclass
+class PracticeDetails:
+    ods_code: str
+    name: str
+    asids: List[str]
+
+
+@dataclass
+class OrganisationMetadata:
+    generated_on: datetime
+    practices: List[PracticeDetails]
+    ccgs: List[CcgDetails]
+
+    @classmethod
+    def from_practice_and_ccg_lists(cls, practices: List[PracticeDetails], ccgs: List[CcgDetails]):
+        return cls(generated_on=datetime.now(tzutc()), practices=practices, ccgs=ccgs)
 
 
 class Gp2gpOrganisationMetadataService:

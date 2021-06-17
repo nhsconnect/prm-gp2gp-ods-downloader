@@ -1,15 +1,15 @@
 from dataclasses import dataclass
 from typing import List, Iterable
 from unittest.mock import Mock
-
 import pytest
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.metadata_service import (
     Gp2gpOrganisationMetadataService,
+    PracticeDetails,
+    CcgDetails,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
-from prmods.domain.ods_portal.organisation_metadata import PracticeDetails, CcgDetails
 
 
 def test_returns_single_practice():

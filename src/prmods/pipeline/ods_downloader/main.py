@@ -1,13 +1,14 @@
 import logging
-
 from dataclasses import asdict
-
 from os import environ
-
 import boto3
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
-from prmods.domain.ods_portal.organisation_metadata import OrganisationMetadataConstructor
+from prmods.domain.ods_portal.metadata_service import (
+    Gp2gpOrganisationMetadataService,
+    OrganisationMetadata,
+)
+from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
 from prmods.domain.ods_portal.ods_portal_client import (
@@ -43,10 +44,14 @@ def main():
     asid_lookup = AsidLookup.from_spine_directory_format(raw_asid_lookup)
 
     ods_client = OdsPortalClient(search_url=config.search_url)
-    organisation_metadata_constructor = OrganisationMetadataConstructor(ods_client, asid_lookup)
+    ods_data_fetcher = OdsPortalDataFetcher(ods_client=ods_client)
+    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=ods_data_fetcher)
 
-    organisation_metadata = (
-        organisation_metadata_constructor.create_organisation_metadata_from_practice_and_ccg_lists()
+    practice_metadata = metadata_service.retrieve_practices_with_asids(asid_lookup=asid_lookup)
+    ccg_metadata = metadata_service.retrieve_ccg_practice_allocations()
+
+    organisation_metadata = OrganisationMetadata.from_practice_and_ccg_lists(
+        practice_metadata, ccg_metadata
     )
 
     s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata))
