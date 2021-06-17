@@ -48,7 +48,9 @@ def main():
     metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=ods_data_fetcher)
 
     practice_metadata = metadata_service.retrieve_practices_with_asids(asid_lookup=asid_lookup)
-    ccg_metadata = metadata_service.retrieve_ccg_practice_allocations()
+    ccg_metadata = metadata_service.retrieve_ccg_practice_allocations(
+        canonical_practice_list=practice_metadata
+    )
 
     organisation_metadata = OrganisationMetadata.from_practice_and_ccg_lists(
         practice_metadata, ccg_metadata

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Iterable
+from typing import List, Iterable, Set
 from warnings import warn
 from datetime import datetime
 from dateutil.tz import tzutc
@@ -46,18 +46,31 @@ class Gp2gpOrganisationMetadataService:
 
         return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
 
-    def retrieve_ccg_practice_allocations(self) -> List[CcgDetails]:
+    def retrieve_ccg_practice_allocations(
+        self, canonical_practice_list: List[PracticeDetails]
+    ) -> List[CcgDetails]:
         ccgs = self._data_fetcher.fetch_all_ccgs()
         unique_ccgs = self._remove_duplicate_organisations(ccgs)
+        canonical_practice_ods_codes = {practice.ods_code for practice in canonical_practice_list}
 
-        return [self._fetch_ccg_practice_allocation(ccg) for ccg in unique_ccgs]
+        return [
+            self._fetch_ccg_practice_allocation(ccg, canonical_practice_ods_codes)
+            for ccg in unique_ccgs
+        ]
 
-    def _fetch_ccg_practice_allocation(self, ccg):
+    def _fetch_ccg_practice_allocation(
+        self, ccg: OrganisationDetails, canonical_practice_ods_codes: Set[str]
+    ):
         ccg_practices = self._data_fetcher.fetch_practices_for_ccg(ccg.ods_code)
+
         return CcgDetails(
             ods_code=ccg.ods_code,
             name=ccg.name,
-            practices=[practice.ods_code for practice in ccg_practices],
+            practices=[
+                practice.ods_code
+                for practice in ccg_practices
+                if practice.ods_code in canonical_practice_ods_codes
+            ],
         )
 
     @staticmethod
