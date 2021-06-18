@@ -97,16 +97,20 @@ def fake_ods_application(request):
 
 
 def _get_fake_response(primary_role, target_org_id):
-    if primary_role == "RO177":
-        return MOCK_PRACTICE_RESPONSE_CONTENT
-    elif target_org_id == "12A":
-        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1
-    elif target_org_id == "13B":
-        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2
-    elif target_org_id == "14C":
-        return MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3
+    target_org_id_lookup = {
+        "12A": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1,
+        "13B": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2,
+        "14C": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3,
+    }
+    primary_role_lookup = {
+        "RO177": MOCK_PRACTICE_RESPONSE_CONTENT,
+        "RO98": MOCK_CCG_RESPONSE_CONTENT,
+    }
+
+    if primary_role:
+        return primary_role_lookup[primary_role]
     else:
-        return MOCK_CCG_RESPONSE_CONTENT
+        return target_org_id_lookup[target_org_id]
 
 
 def _build_fake_s3(host, port):
