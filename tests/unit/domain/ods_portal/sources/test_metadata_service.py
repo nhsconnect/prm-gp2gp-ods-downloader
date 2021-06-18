@@ -111,7 +111,10 @@ def test_returns_unique_practices():
     asid_lookup = AsidLookup([OdsAsid("A12345", "123456789123")])
 
     expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
-    actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    with pytest.warns(RuntimeWarning) as warning:
+        actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+        assert str(warning[0].message) == "Duplicate ODS code found: A12345"
 
     assert actual == expected
 
@@ -228,10 +231,11 @@ def test_returns_unique_ccgs():
 
     expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
-    actual = metadata_service.retrieve_ccg_practice_allocations(
-        canonical_practice_list=canonical_practice_list
-    )
-
+    with pytest.warns(RuntimeWarning) as warning:
+        actual = metadata_service.retrieve_ccg_practice_allocations(
+            canonical_practice_list=canonical_practice_list
+        )
+    assert str(warning[0].message) == "Duplicate ODS code found: X12"
     assert actual == expected
 
 

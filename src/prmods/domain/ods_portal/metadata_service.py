@@ -95,4 +95,6 @@ class Gp2gpOrganisationMetadataService:
         for organisation in organisations:
             if organisation.ods_code not in seen_ods:
                 yield organisation
+            else:
+                warn(f"Duplicate ODS code found: {organisation.ods_code}", RuntimeWarning)
             seen_ods.add(organisation.ods_code)
