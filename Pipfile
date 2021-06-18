@@ -20,7 +20,6 @@ types-requests = "*"
 types-python-dateutil = "*"
 types-freezegun = "*"
 moto = {version = "~=2.0.8", extras = ["server"]}
-pyfakefs = "~=3.7"
 freezegun = "~=0.3"
 pytest-cov = "~=2.10"
 pytest = "~=6.1"
