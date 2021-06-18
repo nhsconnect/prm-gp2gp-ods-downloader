@@ -68,7 +68,6 @@ EXPECTED_PRACTICES = [
 
 EXPECTED_CCGS = [
     {"ods_code": "12A", "name": "Test CCG", "practices": ["A12345"]},
-    {"ods_code": "13B", "name": "Test CCG 2", "practices": []},
     {"ods_code": "14C", "name": "Test CCG 3", "practices": ["B12345", "C12345"]},
 ]
 

@@ -167,7 +167,7 @@ def test_returns_single_ccg_with_one_practice():
     assert actual == expected
 
 
-def test_returns_multiple_ccgs_with_multiple_practices():
+def test_returns_multiple_ccgs_with_at_least_one_practice():
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
@@ -198,7 +198,6 @@ def test_returns_multiple_ccgs_with_multiple_practices():
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
 
     expected = [
-        CcgDetails(ods_code="12A", name="CCG", practices=[]),
         CcgDetails(ods_code="34A", name="CCG 2", practices=["C45678"]),
         CcgDetails(ods_code="56A", name="CCG 3", practices=["D34567", "E98765", "F23456"]),
     ]
@@ -239,20 +238,25 @@ def test_returns_unique_ccgs():
     assert actual == expected
 
 
-def test_does_not_return_ccg_practice_if_not_on_canonical_list():
+def test_filters_out_ccg_practice_that_are_not_in_the_canonical_list():
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
                 ccg=OrganisationDetails(ods_code="X12", name="CCG"),
-                practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
+                practices=[
+                    OrganisationDetails(ods_code="A12345", name="GP Practice"),
+                    OrganisationDetails(ods_code="A12346", name="Other Practice"),
+                ],
             )
         ]
     )
-    canonical_practice_list: list = []
+    canonical_practice_list = [
+        PracticeDetails(ods_code="A12345", name="GP Practice", asids=["123456781234"])
+    ]
 
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
 
-    expected = [CcgDetails(ods_code="X12", name="CCG", practices=[])]
+    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
     actual = metadata_service.retrieve_ccg_practice_allocations(
         canonical_practice_list=canonical_practice_list

@@ -52,15 +52,18 @@ class Gp2gpOrganisationMetadataService:
         ccgs = self._data_fetcher.fetch_all_ccgs()
         unique_ccgs = self._remove_duplicate_organisations(ccgs)
         canonical_practice_ods_codes = {practice.ods_code for practice in canonical_practice_list}
-
-        return [
+        ccg_practice_allocations = [
             self._fetch_ccg_practice_allocation(ccg, canonical_practice_ods_codes)
             for ccg in unique_ccgs
         ]
+        ccgs_containing_practices = [
+            ccg for ccg in ccg_practice_allocations if len(ccg.practices) > 0
+        ]
+        return ccgs_containing_practices
 
     def _fetch_ccg_practice_allocation(
         self, ccg: OrganisationDetails, canonical_practice_ods_codes: Set[str]
-    ):
+    ) -> CcgDetails:
         ccg_practices = self._data_fetcher.fetch_practices_for_ccg(ccg.ods_code)
 
         return CcgDetails(
