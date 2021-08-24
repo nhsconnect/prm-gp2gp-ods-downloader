@@ -78,6 +78,7 @@ To build your image locally:
 
 `docker build . -t <tag>`
 
+
 ### Configuration
 
 Configuration is achieved via the following environment variables:
@@ -86,7 +87,8 @@ Configuration is achieved via the following environment variables:
 | Environment variable  | Description                            | 
 | --------------------- | -------------------------------------- |
 | MAPPING_BUCKET        | Bucket to read asid lookup.            |
-| OUTPUT_BUCKET         | Bucket to write categorised transfers. |
+| OUTPUT_BUCKET         | Bucket to write organisation metadata. |
+
 
 ### Troubleshooting
 
