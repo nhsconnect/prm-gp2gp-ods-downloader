@@ -36,9 +36,17 @@ class OrganisationMetadata:
         return cls(generated_on=datetime.now(tzutc()), practices=practices, ccgs=ccgs)
 
 
+class MetadataServiceObservabilityProbe:
+    def record_asids_not_found(self, ods_code: str):
+        warn(f"ASIDS not found for ODS code: {ods_code}", RuntimeWarning)
+
+
 class Gp2gpOrganisationMetadataService:
-    def __init__(self, data_fetcher: OdsDataSource):
+    def __init__(
+        self, data_fetcher: OdsDataSource, observability_probe: MetadataServiceObservabilityProbe
+    ):
         self._data_fetcher = data_fetcher
+        self._probe = observability_probe
 
     def retrieve_practices_with_asids(self, asid_lookup: AsidLookup) -> List[PracticeDetails]:
         practices = self._data_fetcher.fetch_all_practices()
@@ -76,9 +84,8 @@ class Gp2gpOrganisationMetadataService:
             ],
         )
 
-    @staticmethod
     def _enrich_practices_with_asids(
-        practices: Iterable[OrganisationDetails], asid_lookup: AsidLookup
+        self, practices: Iterable[OrganisationDetails], asid_lookup: AsidLookup
     ):
         for practice in practices:
             if asid_lookup.has_ods(practice.ods_code):
@@ -88,7 +95,7 @@ class Gp2gpOrganisationMetadataService:
                     name=practice.name,
                 )
             else:
-                warn(f"ODS code not found in ASID mapping: {practice.ods_code}", RuntimeWarning)
+                self._probe.record_asids_not_found(practice.ods_code)
 
     @staticmethod
     def _remove_duplicate_organisations(

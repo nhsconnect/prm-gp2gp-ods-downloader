@@ -7,6 +7,7 @@ from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.metadata_service import (
     Gp2gpOrganisationMetadataService,
     OrganisationMetadata,
+    MetadataServiceObservabilityProbe,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
@@ -45,7 +46,10 @@ def main():
 
     ods_client = OdsPortalClient(search_url=config.search_url)
     ods_data_fetcher = OdsPortalDataFetcher(ods_client=ods_client)
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=ods_data_fetcher)
+    probe = MetadataServiceObservabilityProbe()
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=ods_data_fetcher, observability_probe=probe
+    )
 
     practice_metadata = metadata_service.retrieve_practices_with_asids(asid_lookup=asid_lookup)
     ccg_metadata = metadata_service.retrieve_ccg_practice_allocations(

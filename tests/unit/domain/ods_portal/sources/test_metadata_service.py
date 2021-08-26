@@ -14,11 +14,14 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
 
 def test_returns_single_practice():
     mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
         OrganisationDetails(name="GP Practice", ods_code="A12345")
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
     asid_lookup = AsidLookup([OdsAsid("A12345", "123456789123")])
 
     expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
@@ -29,13 +32,16 @@ def test_returns_single_practice():
 
 def test_returns_multiple_practices():
     mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
         OrganisationDetails(ods_code="A12345", name="GP Practice"),
         OrganisationDetails(ods_code="B56789", name="GP Practice 2"),
         OrganisationDetails(ods_code="C56789", name="GP Practice 3"),
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
     asid_lookup = AsidLookup(
         [
             OdsAsid(ods_code="A12345", asid="123456781234"),
@@ -56,11 +62,14 @@ def test_returns_multiple_practices():
 
 def test_returns_single_practice_with_multiple_asids():
     mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
         OrganisationDetails(name="GP Practice", ods_code="A12345")
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
     asid_lookup = AsidLookup(
         [
             OdsAsid(ods_code="A12345", asid="123456781234"),
@@ -80,12 +89,16 @@ def test_returns_single_practice_with_multiple_asids():
 
 def test_skips_practice_and_warns_when_ods_not_in_asid_mapping():
     mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
         OrganisationDetails(ods_code="A12345", name="GP Practice"),
         OrganisationDetails(ods_code="B12345", name="GP Practice 2"),
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
+
     asid_lookup = AsidLookup(
         [
             OdsAsid(ods_code="B12345", asid="123456781234"),
@@ -94,20 +107,24 @@ def test_skips_practice_and_warns_when_ods_not_in_asid_mapping():
 
     expected = [PracticeDetails(asids=["123456781234"], ods_code="B12345", name="GP Practice 2")]
 
-    with pytest.warns(RuntimeWarning):
-        actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+    actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    mock_observability_probe.record_asids_not_found.assert_called_once_with("A12345")
 
     assert actual == expected
 
 
 def test_returns_unique_practices():
     mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
         OrganisationDetails(name="GP Practice", ods_code="A12345"),
         OrganisationDetails(name="GP Practice 2", ods_code="A12345"),
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(data_fetcher=mock_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
     asid_lookup = AsidLookup([OdsAsid("A12345", "123456789123")])
 
     expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
@@ -144,6 +161,7 @@ class FakeDataFetcher:
 
 
 def test_returns_single_ccg_with_one_practice():
+    mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
@@ -156,7 +174,7 @@ def test_returns_single_ccg_with_one_practice():
         PracticeDetails(name="GP Practice", ods_code="A12345", asids=["123456789123"])
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
     expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
@@ -168,6 +186,7 @@ def test_returns_single_ccg_with_one_practice():
 
 
 def test_returns_multiple_ccgs_with_at_least_one_practice():
+    mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
@@ -195,7 +214,7 @@ def test_returns_multiple_ccgs_with_at_least_one_practice():
         PracticeDetails(name="GP Practice 4", ods_code="F23456", asids=["423456789123"]),
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
     expected = [
         CcgDetails(ods_code="34A", name="CCG 2", practices=["C45678"]),
@@ -210,6 +229,7 @@ def test_returns_multiple_ccgs_with_at_least_one_practice():
 
 
 def test_returns_unique_ccgs():
+    mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
@@ -226,7 +246,7 @@ def test_returns_unique_ccgs():
         PracticeDetails(name="GP Practice", ods_code="A12345", asids=["123456789123"])
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
     expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
@@ -239,6 +259,7 @@ def test_returns_unique_ccgs():
 
 
 def test_filters_out_ccg_practice_that_are_not_in_the_canonical_list():
+    mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
         ccgs=[
             CCGPracticeAllocation(
@@ -254,7 +275,7 @@ def test_filters_out_ccg_practice_that_are_not_in_the_canonical_list():
         PracticeDetails(ods_code="A12345", name="GP Practice", asids=["123456781234"])
     ]
 
-    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher)
+    metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
     expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
