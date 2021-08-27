@@ -40,6 +40,9 @@ class MetadataServiceObservabilityProbe:
     def record_asids_not_found(self, ods_code: str):
         warn(f"ASIDS not found for ODS code: {ods_code}", RuntimeWarning)
 
+    def record_duplicate_organisation(self, ods_code: str):
+        warn(f"Duplicate ODS code found: {ods_code}", RuntimeWarning)
+
 
 class Gp2gpOrganisationMetadataService:
     def __init__(
@@ -97,8 +100,8 @@ class Gp2gpOrganisationMetadataService:
             else:
                 self._probe.record_asids_not_found(practice.ods_code)
 
-    @staticmethod
     def _remove_duplicate_organisations(
+        self,
         organisations: List[OrganisationDetails],
     ) -> Iterable[OrganisationDetails]:
         seen_ods = set()
@@ -106,5 +109,5 @@ class Gp2gpOrganisationMetadataService:
             if organisation.ods_code not in seen_ods:
                 yield organisation
             else:
-                warn(f"Duplicate ODS code found: {organisation.ods_code}", RuntimeWarning)
+                self._probe.record_duplicate_organisation(organisation.ods_code)
             seen_ods.add(organisation.ods_code)

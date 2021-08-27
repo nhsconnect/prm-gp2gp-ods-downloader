@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Iterable
 from unittest.mock import Mock
-import pytest
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.metadata_service import (
@@ -129,9 +128,9 @@ def test_returns_unique_practices():
 
     expected = [PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice")]
 
-    with pytest.warns(RuntimeWarning) as warning:
-        actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
-        assert str(warning[0].message) == "Duplicate ODS code found: A12345"
+    actual = metadata_service.retrieve_practices_with_asids(asid_lookup)
+
+    mock_observability_probe.record_duplicate_organisation.assert_called_once_with("A12345")
 
     assert actual == expected
 
@@ -250,11 +249,10 @@ def test_returns_unique_ccgs():
 
     expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
 
-    with pytest.warns(RuntimeWarning) as warning:
-        actual = metadata_service.retrieve_ccg_practice_allocations(
-            canonical_practice_list=canonical_practice_list
-        )
-    assert str(warning[0].message) == "Duplicate ODS code found: X12"
+    actual = metadata_service.retrieve_ccg_practice_allocations(canonical_practice_list)
+
+    mock_observability_probe.record_duplicate_organisation.assert_called_once_with("X12")
+
     assert actual == expected
 
 
