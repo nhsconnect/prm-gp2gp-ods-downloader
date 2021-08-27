@@ -1,4 +1,5 @@
 import json
+import logging
 from io import BytesIO
 
 import boto3
@@ -125,6 +126,11 @@ def _build_fake_ods(host, port):
     return ThreadedServer(server)
 
 
+def _disable_werkzeug_logging():
+    log = logging.getLogger("werkzeug")
+    log.setLevel(logging.ERROR)
+
+
 def _read_s3_json_file(bucket, key):
     f = BytesIO()
     bucket.download_fileobj(key, f)
@@ -133,6 +139,8 @@ def _read_s3_json_file(bucket, key):
 
 
 def test_with_s3():
+    _disable_werkzeug_logging()
+
     s3 = boto3.resource(
         "s3",
         endpoint_url=FAKE_S3_URL,

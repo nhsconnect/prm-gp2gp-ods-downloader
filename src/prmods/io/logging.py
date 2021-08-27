@@ -1,11 +1,11 @@
 import json
-from logging import LogRecord, makeLogRecord
+from logging import LogRecord, makeLogRecord, Formatter
 from datetime import datetime
 
 DEFAULT_LOG_RECORD_ATTRS = vars(makeLogRecord({})).keys()
 
 
-class JsonFormatter:
+class JsonFormatter(Formatter):
     def format(self, record: LogRecord) -> str:
         return json.dumps(
             {

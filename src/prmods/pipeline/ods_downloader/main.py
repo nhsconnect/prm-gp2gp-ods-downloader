@@ -10,6 +10,7 @@ from prmods.domain.ods_portal.metadata_service import (
     MetadataServiceObservabilityProbe,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
+from prmods.io.logging import JsonFormatter
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
 from prmods.domain.ods_portal.ods_portal_client import (
@@ -17,17 +18,23 @@ from prmods.domain.ods_portal.ods_portal_client import (
 )
 from prmods.io.s3 import S3DataManager
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("prmods")
 
 VERSION = "v2"
 
 
+def _setup_logger():
+    logger.setLevel(logging.INFO)
+    formatter = JsonFormatter()
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+
+
 def main():
+    _setup_logger()
+
     config = OdsPortalConfig.from_environment_variables(environ)
-
-    logging.basicConfig(level=logging.INFO)
-
-    logger.info(config.s3_endpoint_url)
 
     date_prefix = f"{config.date_anchor.year}/{config.date_anchor.month}"
     asid_lookup_s3_path = f"s3://{config.mapping_bucket}/{date_prefix}/asidLookup.csv.gz"
