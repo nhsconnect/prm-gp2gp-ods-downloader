@@ -1,6 +1,6 @@
 from dataclasses import dataclass
+from logging import Logger, getLogger
 from typing import List, Iterable, Set
-from warnings import warn
 from datetime import datetime
 from dateutil.tz import tzutc
 
@@ -36,12 +36,18 @@ class OrganisationMetadata:
         return cls(generated_on=datetime.now(tzutc()), practices=practices, ccgs=ccgs)
 
 
+module_logger = getLogger(__name__)
+
+
 class MetadataServiceObservabilityProbe:
+    def __init__(self, logger: Logger = module_logger):
+        self._logger = logger
+
     def record_asids_not_found(self, ods_code: str):
-        warn(f"ASIDS not found for ODS code: {ods_code}", RuntimeWarning)
+        self._logger.warning(f"ASIDS not found for ODS code: {ods_code}")
 
     def record_duplicate_organisation(self, ods_code: str):
-        warn(f"Duplicate ODS code found: {ods_code}", RuntimeWarning)
+        self._logger.warning(f"Duplicate ODS code found: {ods_code}")
 
 
 class Gp2gpOrganisationMetadataService:
