@@ -44,6 +44,7 @@ INPUT_ASID_CSV = BytesIO(
 MOCK_PRACTICE_RESPONSE_CONTENT = (
     b'{"Organisations": [{"Name": "Test GP", "OrgId": "A12345"}, '
     b'{"Name": "Test GP 2", "OrgId": "B12345"}, '
+    b'{"Name": "Test GP 2 Duplicate", "OrgId": "B12345"}, '
     b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
 )
 MOCK_CCG_RESPONSE_CONTENT = (
