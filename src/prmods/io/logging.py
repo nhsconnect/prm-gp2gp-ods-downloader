@@ -16,6 +16,7 @@ class JsonFormatter(Formatter):
             | {
                 "level": record.levelname,
                 "message": record.msg,
+                "module": record.module,
                 "time": datetime.utcfromtimestamp(record.created).isoformat(),
             }
         )
