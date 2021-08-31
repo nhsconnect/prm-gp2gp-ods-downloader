@@ -42,9 +42,6 @@ def main():
         f"s3://{config.output_bucket}/{VERSION}/{date_prefix}" f"/organisationMetadata.json"
     )
 
-    logger.info("using asid lookup file located in : " + asid_lookup_s3_path)
-    logger.info("output location is: " + metadata_output_s3_path)
-
     s3 = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
     s3_manager = S3DataManager(s3)
 

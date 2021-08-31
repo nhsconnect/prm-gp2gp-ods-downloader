@@ -44,10 +44,16 @@ class MetadataServiceObservabilityProbe:
         self._logger = logger
 
     def record_asids_not_found(self, ods_code: str):
-        self._logger.warning(f"ASIDS not found for ODS code: {ods_code}")
+        self._logger.warning(
+            f"ASIDS not found for ODS code: {ods_code}",
+            extra={"event": "ASIDS_NOT_FOUND", "ods_code": ods_code},
+        )
 
     def record_duplicate_organisation(self, ods_code: str):
-        self._logger.warning(f"Duplicate ODS code found: {ods_code}")
+        self._logger.warning(
+            f"Duplicate ODS code found: {ods_code}",
+            extra={"event": "DUPLICATE_ODS_CODE_FOUND", "ods_code": ods_code},
+        )
 
 
 class Gp2gpOrganisationMetadataService:
