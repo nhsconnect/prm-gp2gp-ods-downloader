@@ -10,13 +10,13 @@ from prmods.domain.ods_portal.metadata_service import (
     MetadataServiceObservabilityProbe,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
-from prmods.io.json_formatter import JsonFormatter
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
 from prmods.domain.ods_portal.ods_portal_client import (
     OdsPortalClient,
 )
-from prmods.io.s3 import S3DataManager
+from prmods.utils.io.json_formatter import JsonFormatter
+from prmods.utils.io.s3 import S3DataManager
 
 logger = logging.getLogger("prmods")
 
