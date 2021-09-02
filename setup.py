@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "ods-portal-pipeline=prmods.pipeline.ods_downloader.main:main",
+            "ods-portal-pipeline=prmods.pipeline.main:main",
         ]
     },
 )

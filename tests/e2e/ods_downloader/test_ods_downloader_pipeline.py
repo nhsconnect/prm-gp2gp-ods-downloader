@@ -11,9 +11,9 @@ from moto.server import DomainDispatcherApplication, create_backend_app
 from werkzeug import Response, Request
 from werkzeug.serving import make_server
 
-from prmods.pipeline.ods_downloader.main import main
+from prmods.pipeline.main import main
 
-from src.prmods.pipeline.ods_downloader.main import VERSION
+from prmods.pipeline.main import VERSION
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"
