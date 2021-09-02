@@ -10,7 +10,7 @@ from prmods.domain.ods_portal.metadata_service import (
     MetadataServiceObservabilityProbe,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
-from prmods.io.logging import JsonFormatter
+from prmods.io.json_formatter import JsonFormatter
 from prmods.pipeline.ods_downloader.config import OdsPortalConfig
 
 from prmods.domain.ods_portal.ods_portal_client import (
