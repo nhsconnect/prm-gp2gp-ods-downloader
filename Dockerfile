@@ -4,4 +4,4 @@ COPY . /prmods
 
 RUN cd /prmods && python setup.py install
 
-ENTRYPOINT ["python", "-m", "prmods.pipeline.ods_downloader.main"]
+ENTRYPOINT ["python", "-m", "prmods.pipeline.main"]
