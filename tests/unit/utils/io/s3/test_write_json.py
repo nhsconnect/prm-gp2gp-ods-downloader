@@ -1,9 +1,10 @@
 from datetime import datetime
+from unittest import mock
 
 import boto3
 from moto import mock_s3
 
-from prmods.utils.io.s3 import S3DataManager
+from prmods.utils.io.s3 import S3DataManager, logger
 from tests.unit.utils.io.s3 import MOTO_MOCK_REGION
 
 
@@ -53,3 +54,29 @@ def test_writes_correct_content_type():
     actual = bucket.Object("test_object.json").get()["ContentType"]
 
     assert actual == expected
+
+
+@mock_s3
+def test_will_log_writing_file_events():
+    conn = boto3.resource("s3", region_name=MOTO_MOCK_REGION)
+    bucket_name = "test_bucket"
+    conn.create_bucket(Bucket=bucket_name)
+    data = {"fruit": "mango"}
+
+    s3_manager = S3DataManager(conn)
+    s3_file_path = f"s3://{bucket_name}/test_object.json"
+
+    with mock.patch.object(logger, "info") as mock_log_info:
+        s3_manager.write_json(s3_file_path, data)
+        mock_log_info.assert_has_calls(
+            [
+                mock.call(
+                    f"Attempting to upload: {s3_file_path}",
+                    extra={"event": "ATTEMPTING_UPLOAD_JSON_TO_S3"},
+                ),
+                mock.call(
+                    f"Successfully uploaded to: {s3_file_path}",
+                    extra={"event": "UPLOADED_JSON_TO_S3"},
+                ),
+            ]
+        )
