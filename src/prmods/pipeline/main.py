@@ -64,7 +64,7 @@ def main():
         practice_metadata, ccg_metadata
     )
 
-    s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata))
+    s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata), {})
 
 
 if __name__ == "__main__":
