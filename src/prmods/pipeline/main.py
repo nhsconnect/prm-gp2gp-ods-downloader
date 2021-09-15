@@ -36,6 +36,8 @@ def main():
 
     config = OdsPortalConfig.from_environment_variables(environ)
 
+    output_metadata = {"date-anchor": config.date_anchor.isoformat()}
+
     date_prefix = f"{config.date_anchor.year}/{config.date_anchor.month}"
     asid_lookup_s3_path = f"s3://{config.mapping_bucket}/{date_prefix}/asidLookup.csv.gz"
     metadata_output_s3_path = (
@@ -64,7 +66,7 @@ def main():
         practice_metadata, ccg_metadata
     )
 
-    s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata), {})
+    s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata), output_metadata)
 
 
 if __name__ == "__main__":

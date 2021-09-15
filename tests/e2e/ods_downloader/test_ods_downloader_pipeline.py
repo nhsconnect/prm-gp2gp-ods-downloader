@@ -138,6 +138,10 @@ def _read_s3_json_file(bucket, key):
     return json.loads(f.read().decode("utf-8"))
 
 
+def _read_s3_metadata(bucket, key):
+    return bucket.Object(key).get()["Metadata"]
+
+
 def test_with_s3():
     _disable_werkzeug_logging()
 
@@ -168,6 +172,10 @@ def test_with_s3():
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
     fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
 
+    expected_metadata = {
+        "date-anchor": "2020-01-30T18:44:49+00:00",
+    }
+
     try:
         fake_s3.start()
         fake_ods.start()
@@ -176,13 +184,18 @@ def test_with_s3():
         output_bucket.create()
         output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
 
+        output_path = f"{VERSION}/{year}/{month}/organisationMetadata.json"
+
         main()
 
-        actual = _read_s3_json_file(
-            output_bucket, f"{VERSION}/{year}/{month}/organisationMetadata.json"
-        )
+        actual = _read_s3_json_file(output_bucket, output_path)
+
+        actual_s3_metadata = _read_s3_metadata(output_bucket, output_path)
+
         assert actual["practices"] == EXPECTED_PRACTICES
         assert actual["ccgs"] == EXPECTED_CCGS
+        assert actual_s3_metadata == expected_metadata
+
     finally:
         fake_ods.stop()
         fake_s3.stop()
