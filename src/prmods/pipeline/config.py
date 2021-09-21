@@ -37,6 +37,7 @@ def _read_env(field, env_vars):
 class OdsPortalConfig:
     output_bucket: str
     mapping_bucket: str
+    build_tag: str
     date_anchor: datetime
     search_url: Optional[str] = ODS_PORTAL_SEARCH_URL
     s3_endpoint_url: Optional[str] = None

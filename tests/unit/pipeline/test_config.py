@@ -7,12 +7,14 @@ from prmods.pipeline.config import OdsPortalConfig, MissingEnvironmentVariable
 
 
 def test_reads_from_environment_variables_and_converts_to_required_format():
+    build_tag = "61ad1e1c"
     environment = {
         "S3_ENDPOINT_URL": "https://an.endpoint:3000",
         "OUTPUT_BUCKET": "output-bucket",
         "MAPPING_BUCKET": "mapping-bucket",
         "SEARCH_URL": "https://an.endpoint:3000",
         "DATE_ANCHOR": "2020-01-30T18:44:49Z",
+        "BUILD_TAG": build_tag,
     }
 
     expected_config = OdsPortalConfig(
@@ -23,6 +25,7 @@ def test_reads_from_environment_variables_and_converts_to_required_format():
         date_anchor=datetime(
             year=2020, month=1, day=30, hour=18, minute=44, second=49, tzinfo=tzutc()
         ),
+        build_tag=build_tag,
     )
 
     actual_config = OdsPortalConfig.from_environment_variables(environment)
@@ -31,10 +34,12 @@ def test_reads_from_environment_variables_and_converts_to_required_format():
 
 
 def test_read_config_from_environment_when_optional_parameters_are_not_set():
+    build_tag = "61ad1e1c"
     environment = {
         "OUTPUT_BUCKET": "output-bucket",
         "MAPPING_BUCKET": "mapping-bucket",
         "DATE_ANCHOR": "2020-01-30T18:44:49Z",
+        "BUILD_TAG": build_tag,
     }
 
     expected_config = OdsPortalConfig(
@@ -44,6 +49,7 @@ def test_read_config_from_environment_when_optional_parameters_are_not_set():
         date_anchor=datetime(
             year=2020, month=1, day=30, hour=18, minute=44, second=49, tzinfo=tzutc()
         ),
+        build_tag=build_tag,
     )
 
     actual_config = OdsPortalConfig.from_environment_variables(environment)

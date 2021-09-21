@@ -165,6 +165,7 @@ def test_with_s3():
     environ["MAPPING_BUCKET"] = "prm-gp2gp-ods-data"
     environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
     environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
+    environ["BUILD_TAG"] = "61ad1e1c"
 
     year = 2020
     month = 1
