@@ -173,9 +173,7 @@ def test_with_s3():
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
     fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
 
-    expected_metadata = {
-        "date-anchor": "2020-01-30T18:44:49+00:00",
-    }
+    expected_metadata = {"date-anchor": "2020-01-30T18:44:49+00:00", "build-tag": "61ad1e1c"}
 
     try:
         fake_s3.start()
