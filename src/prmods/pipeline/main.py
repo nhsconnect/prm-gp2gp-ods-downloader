@@ -1,20 +1,18 @@
 import logging
 from dataclasses import asdict
 from os import environ
+
 import boto3
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.metadata_service import (
     Gp2gpOrganisationMetadataService,
-    OrganisationMetadata,
     MetadataServiceObservabilityProbe,
+    OrganisationMetadata,
 )
+from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
 from prmods.pipeline.config import OdsPortalConfig
-
-from prmods.domain.ods_portal.ods_portal_client import (
-    OdsPortalClient,
-)
 from prmods.utils.io.json_formatter import JsonFormatter
 from prmods.utils.io.s3 import S3DataManager
 

@@ -1,19 +1,16 @@
 import json
 import logging
 from io import BytesIO
-
-import boto3
-
 from os import environ
 from threading import Thread
+
+import boto3
 from botocore.config import Config
 from moto.server import DomainDispatcherApplication, create_backend_app
-from werkzeug import Response, Request
+from werkzeug import Request, Response
 from werkzeug.serving import make_server
 
-from prmods.pipeline.main import main
-
-from prmods.pipeline.main import VERSION
+from prmods.pipeline.main import VERSION, main
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"

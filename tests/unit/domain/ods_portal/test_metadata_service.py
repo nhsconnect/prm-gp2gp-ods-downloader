@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import List, Iterable
+from typing import Iterable, List
 from unittest.mock import Mock
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.metadata_service import (
+    CcgDetails,
     Gp2gpOrganisationMetadataService,
     PracticeDetails,
-    CcgDetails,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
 

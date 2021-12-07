@@ -2,8 +2,9 @@ from datetime import datetime
 
 import pytest
 from dateutil.tz import tzutc
+
 from prmods.domain.ods_portal.ods_portal_client import ODS_PORTAL_SEARCH_URL
-from prmods.pipeline.config import OdsPortalConfig, MissingEnvironmentVariable
+from prmods.pipeline.config import MissingEnvironmentVariable, OdsPortalConfig
 
 
 def test_reads_from_environment_variables_and_converts_to_required_format():

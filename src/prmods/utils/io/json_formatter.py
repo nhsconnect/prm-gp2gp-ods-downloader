@@ -1,6 +1,6 @@
 import json
-from logging import LogRecord, makeLogRecord, Formatter
 from datetime import datetime
+from logging import Formatter, LogRecord, makeLogRecord
 
 DEFAULT_LOG_RECORD_ATTRS = vars(makeLogRecord({})).keys()
 

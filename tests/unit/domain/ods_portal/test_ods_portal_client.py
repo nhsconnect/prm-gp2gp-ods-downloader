@@ -1,9 +1,10 @@
+from typing import Dict
 from unittest.mock import MagicMock
+
 import pytest
 
 from src.prmods.domain.ods_portal.ods_portal_client import OdsPortalClient, OdsPortalException
 from tests.builders.ods_portal import build_mock_response
-from typing import Dict
 
 MOCK_PARAMS: Dict[str, str] = {}
 

@@ -1,7 +1,7 @@
-import logging
 import csv
 import gzip
 import json
+import logging
 from datetime import datetime
 from typing import Dict
 from urllib.parse import urlparse

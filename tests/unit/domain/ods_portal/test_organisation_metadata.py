@@ -1,11 +1,12 @@
 from datetime import datetime
+
 from dateutil.tz import tzutc
 from freezegun import freeze_time
 
 from prmods.domain.ods_portal.metadata_service import (
-    PracticeDetails,
     CcgDetails,
     OrganisationMetadata,
+    PracticeDetails,
 )
 
 

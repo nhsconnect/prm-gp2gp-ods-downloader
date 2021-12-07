@@ -1,6 +1,6 @@
 import json
-import requests
 
+import requests
 
 ODS_PORTAL_SEARCH_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations"
 NEXT_PAGE_HEADER = "Next-Page"

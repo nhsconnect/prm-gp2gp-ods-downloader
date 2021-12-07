@@ -1,14 +1,12 @@
 from dataclasses import dataclass
-from logging import Logger, getLogger
-from typing import List, Iterable, Set
 from datetime import datetime
+from logging import Logger, getLogger
+from typing import Iterable, List, Set
+
 from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
-from prmods.domain.ods_portal.ods_portal_data_fetcher import (
-    OrganisationDetails,
-    OdsDataSource,
-)
+from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsDataSource, OrganisationDetails
 
 
 @dataclass
