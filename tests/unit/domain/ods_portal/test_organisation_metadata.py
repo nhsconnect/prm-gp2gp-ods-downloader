@@ -14,9 +14,22 @@ from prmods.domain.ods_portal.metadata_service import (
 def test_has_correct_generated_on_timestamp_given_time():
     expected_generated_on = datetime(year=2019, month=6, day=2, hour=23, second=42, tzinfo=tzutc())
 
-    actual = OrganisationMetadata.from_practice_and_ccg_lists(practices=[], ccgs=[])
+    actual = OrganisationMetadata.from_practice_and_ccg_lists(
+        practices=[], ccgs=[], year=2019, month=6
+    )
 
     assert actual.generated_on == expected_generated_on
+
+
+def test_returns_given_year_and_month():
+    year = 2019
+    month = 6
+    actual = OrganisationMetadata.from_practice_and_ccg_lists(
+        practices=[], ccgs=[], year=year, month=month
+    )
+
+    assert actual.year == year
+    assert actual.month == month
 
 
 def test_returns_multiple_practices_and_ccgs():
@@ -33,7 +46,7 @@ def test_returns_multiple_practices_and_ccgs():
     ]
 
     actual = OrganisationMetadata.from_practice_and_ccg_lists(
-        practices=practice_metadata, ccgs=ccg_metadata
+        practices=practice_metadata, ccgs=ccg_metadata, year=2019, month=6
     )
 
     assert actual.practices == practice_metadata

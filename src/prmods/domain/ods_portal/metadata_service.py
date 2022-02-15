@@ -26,12 +26,22 @@ class PracticeDetails:
 @dataclass
 class OrganisationMetadata:
     generated_on: datetime
+    year: int
+    month: int
     practices: List[PracticeDetails]
     ccgs: List[CcgDetails]
 
     @classmethod
-    def from_practice_and_ccg_lists(cls, practices: List[PracticeDetails], ccgs: List[CcgDetails]):
-        return cls(generated_on=datetime.now(tzutc()), practices=practices, ccgs=ccgs)
+    def from_practice_and_ccg_lists(
+        cls, practices: List[PracticeDetails], ccgs: List[CcgDetails], year: int, month: int
+    ):
+        return cls(
+            generated_on=datetime.now(tzutc()),
+            practices=practices,
+            ccgs=ccgs,
+            year=year,
+            month=month,
+        )
 
 
 module_logger = getLogger(__name__)

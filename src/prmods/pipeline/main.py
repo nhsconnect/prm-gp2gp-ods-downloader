@@ -18,7 +18,7 @@ from prmods.utils.io.s3 import S3DataManager
 
 logger = logging.getLogger("prmods")
 
-VERSION = "v2"
+VERSION = "v3"
 
 
 def _setup_logger():
@@ -61,7 +61,7 @@ def main():
     )
 
     organisation_metadata = OrganisationMetadata.from_practice_and_ccg_lists(
-        practice_metadata, ccg_metadata
+        practice_metadata, ccg_metadata, config.date_anchor.year, config.date_anchor.month
     )
 
     s3_manager.write_json(metadata_output_s3_path, asdict(organisation_metadata), output_metadata)

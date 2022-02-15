@@ -10,7 +10,7 @@ from moto.server import DomainDispatcherApplication, create_backend_app
 from werkzeug import Request, Response
 from werkzeug.serving import make_server
 
-from prmods.pipeline.main import VERSION, main
+from prmods.pipeline.main import main
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"
@@ -180,7 +180,7 @@ def test_with_s3():
         output_bucket.create()
         output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
 
-        output_path = f"{VERSION}/{year}/{month}/organisationMetadata.json"
+        output_path = f"v3/{year}/{month}/organisationMetadata.json"
 
         main()
 
@@ -188,6 +188,8 @@ def test_with_s3():
 
         actual_s3_metadata = _read_s3_metadata(output_bucket, output_path)
 
+        assert actual["year"] == year
+        assert actual["month"] == month
         assert actual["practices"] == EXPECTED_PRACTICES
         assert actual["ccgs"] == EXPECTED_CCGS
         assert actual_s3_metadata == expected_metadata
