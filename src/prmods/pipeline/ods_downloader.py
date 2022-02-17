@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from datetime import datetime
 
 import boto3
 
@@ -12,26 +11,8 @@ from prmods.domain.ods_portal.metadata_service import (
 from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
 from prmods.pipeline.config import OdsPortalConfig
+from prmods.pipeline.s3_uri_resolver import OdsDownloaderS3UriResolver
 from prmods.utils.io.s3 import S3DataManager
-
-
-class OdsDownloaderS3UriResolver:
-    VERSION = "v3"
-
-    def __init__(self, asid_lookup_bucket: str, ods_metadata_bucket):
-        self._asid_lookup_bucket = asid_lookup_bucket
-        self._ods_metadata_bucket = ods_metadata_bucket
-
-    def asid_lookup(self, date_anchor: datetime) -> str:
-        date_prefix = f"{date_anchor.year}/{date_anchor.month}"
-        return f"s3://{self._asid_lookup_bucket}/{date_prefix}/asidLookup.csv.gz"
-
-    def ods_metadata(self, date_anchor: datetime) -> str:
-        date_prefix = f"{date_anchor.year}/{date_anchor.month}"
-        return (
-            f"s3://{self._ods_metadata_bucket}/{self.VERSION}/{date_prefix}"
-            f"/organisationMetadata.json"
-        )
 
 
 class OdsDownloader:
