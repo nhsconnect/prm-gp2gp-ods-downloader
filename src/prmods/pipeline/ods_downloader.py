@@ -45,6 +45,13 @@ class OdsDownloader:
             ods_metadata_bucket=self._config.output_bucket,
         )
 
+        ods_client = OdsPortalClient(search_url=self._config.search_url)
+        ods_data_fetcher = OdsPortalDataFetcher(ods_client=ods_client)
+        probe = MetadataServiceObservabilityProbe()
+        self._metadata_service = Gp2gpOrganisationMetadataService(
+            data_fetcher=ods_data_fetcher, observability_probe=probe
+        )
+
     def _read_asid_lookup(self) -> AsidLookup:
         asid_lookup_s3_path = self._uris.asid_lookup(self._config.date_anchor)
         raw_asid_lookup = self._s3_manager.read_gzip_csv(asid_lookup_s3_path)
@@ -61,16 +68,11 @@ class OdsDownloader:
         )
 
     def run(self):
-        ods_client = OdsPortalClient(search_url=self._config.search_url)
-        ods_data_fetcher = OdsPortalDataFetcher(ods_client=ods_client)
-        probe = MetadataServiceObservabilityProbe()
-        metadata_service = Gp2gpOrganisationMetadataService(
-            data_fetcher=ods_data_fetcher, observability_probe=probe
-        )
-
         asid_lookup = self._read_asid_lookup()
-        practice_metadata = metadata_service.retrieve_practices_with_asids(asid_lookup=asid_lookup)
-        ccg_metadata = metadata_service.retrieve_ccg_practice_allocations(
+        practice_metadata = self._metadata_service.retrieve_practices_with_asids(
+            asid_lookup=asid_lookup
+        )
+        ccg_metadata = self._metadata_service.retrieve_ccg_practice_allocations(
             canonical_practice_list=practice_metadata
         )
         organisation_metadata = OrganisationMetadata.from_practice_and_ccg_lists(
@@ -79,5 +81,4 @@ class OdsDownloader:
             self._config.date_anchor.year,
             self._config.date_anchor.month,
         )
-
         self._write_ods_metadata(organisation_metadata)
