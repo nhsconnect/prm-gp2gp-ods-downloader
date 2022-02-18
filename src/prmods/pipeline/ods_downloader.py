@@ -1,3 +1,5 @@
+import logging
+import sys
 from dataclasses import asdict
 from datetime import datetime
 
@@ -15,6 +17,8 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetche
 from prmods.pipeline.config import OdsPortalConfig
 from prmods.pipeline.s3_uri_resolver import OdsDownloaderS3UriResolver
 from prmods.utils.io.s3 import S3DataManager
+
+logger = logging.getLogger(__name__)
 
 
 class OdsDownloader:
@@ -50,15 +54,34 @@ class OdsDownloader:
         raw_asid_lookup = self._s3_manager.read_gzip_csv(asid_lookup_s3_path)
         return AsidLookup.from_spine_directory_format(raw_asid_lookup)
 
+    def _read_previous_month_asid_lookup(self):
+        previous_month_datetime = self._config.date_anchor - relativedelta(months=1)
+        self._add_asid_lookup_month_to_metadata(previous_month_datetime)
+
+        try:
+            return self._read_asid_lookup(previous_month_datetime)
+        except self._s3_client.meta.client.exceptions.NoSuchKey:
+            logger.error(
+                "ASID lookup files not found for both current and previous month, exiting...",
+                extra={
+                    "event": "ASID_LOOKUP_FILES_NOT_FOUND_IN_S3",
+                    "current_month": (
+                        f"{self._config.date_anchor.year}-{self._config.date_anchor.month}"
+                    ),
+                    "previous_month": (
+                        f"{previous_month_datetime.year}-{previous_month_datetime.month}"
+                    ),
+                },
+            )
+            sys.exit(1)
+
     def _read_most_recent_asid_lookup(self) -> AsidLookup:
         try:
             self._add_asid_lookup_month_to_metadata(self._config.date_anchor)
             return self._read_asid_lookup(self._config.date_anchor)
 
         except self._s3_client.meta.client.exceptions.NoSuchKey:
-            previous_month_datetime = self._config.date_anchor - relativedelta(months=1)
-            self._add_asid_lookup_month_to_metadata(previous_month_datetime)
-            return self._read_asid_lookup(previous_month_datetime)
+            return self._read_previous_month_asid_lookup()
 
     def _write_ods_metadata(self, organisation_metadata: OrganisationMetadata):
         metadata_output_s3_path = self._uris.ods_metadata(self._config.date_anchor)
