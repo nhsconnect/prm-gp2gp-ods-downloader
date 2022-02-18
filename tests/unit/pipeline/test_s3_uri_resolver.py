@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from prmods.pipeline.s3_uri_resolver import OdsDownloaderS3UriResolver
 from tests.builders.common import a_datetime, a_string
 
@@ -17,21 +15,6 @@ def test_resolver_returns_correct_asid_lookup_uri_given_date_anchor():
     actual = uri_resolver.asid_lookup(date_anchor)
 
     expected = f"s3://{asid_lookup_bucket}/{year}/{month}/asidLookup.csv.gz"
-
-    assert actual == expected
-
-
-def test_resolver_returns_correct_previous_month_asid_lookup_uri_given_date_anchor():
-    asid_lookup_bucket = a_string()
-    date_anchor = datetime(year=2021, month=1, day=15)
-
-    uri_resolver = OdsDownloaderS3UriResolver(
-        asid_lookup_bucket=asid_lookup_bucket, ods_metadata_bucket=a_string()
-    )
-
-    actual = uri_resolver.previous_month_asid_lookup(date_anchor)
-
-    expected = f"s3://{asid_lookup_bucket}/2020/12/asidLookup.csv.gz"
 
     assert actual == expected
 

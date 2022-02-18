@@ -1,6 +1,8 @@
 from dataclasses import asdict
+from datetime import datetime
 
 import boto3
+from dateutil.relativedelta import relativedelta
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.metadata_service import (
@@ -33,29 +35,35 @@ class OdsDownloader:
             data_fetcher=ods_data_fetcher, observability_probe=probe
         )
 
-    def _read_asid_lookup(self, asid_lookup_s3_path: str) -> AsidLookup:
+        self._output_metadata = {
+            "date-anchor": self._config.date_anchor.isoformat(),
+            "build-tag": self._config.build_tag,
+        }
+
+    def _add_asid_lookup_month_to_metadata(self, asid_lookup_datetime: datetime):
+        self._output_metadata[
+            "asid-lookup-month"
+        ] = f"{asid_lookup_datetime.year}-{asid_lookup_datetime.month}"
+
+    def _read_asid_lookup(self, date_anchor: datetime) -> AsidLookup:
+        asid_lookup_s3_path = self._uris.asid_lookup(date_anchor)
         raw_asid_lookup = self._s3_manager.read_gzip_csv(asid_lookup_s3_path)
         return AsidLookup.from_spine_directory_format(raw_asid_lookup)
 
     def _read_most_recent_asid_lookup(self) -> AsidLookup:
         try:
-            asid_lookup_s3_path = self._uris.asid_lookup(self._config.date_anchor)
-            return self._read_asid_lookup(asid_lookup_s3_path)
+            self._add_asid_lookup_month_to_metadata(self._config.date_anchor)
+            return self._read_asid_lookup(self._config.date_anchor)
 
         except self._s3_client.meta.client.exceptions.NoSuchKey:
-            previous_month_asid_lookup_s3_path = self._uris.previous_month_asid_lookup(
-                self._config.date_anchor
-            )
-            return self._read_asid_lookup(previous_month_asid_lookup_s3_path)
+            previous_month_datetime = self._config.date_anchor - relativedelta(months=1)
+            self._add_asid_lookup_month_to_metadata(previous_month_datetime)
+            return self._read_asid_lookup(previous_month_datetime)
 
     def _write_ods_metadata(self, organisation_metadata: OrganisationMetadata):
         metadata_output_s3_path = self._uris.ods_metadata(self._config.date_anchor)
-        output_metadata = {
-            "date-anchor": self._config.date_anchor.isoformat(),
-            "build-tag": self._config.build_tag,
-        }
         self._s3_manager.write_json(
-            metadata_output_s3_path, asdict(organisation_metadata), output_metadata
+            metadata_output_s3_path, asdict(organisation_metadata), self._output_metadata
         )
 
     def run(self):

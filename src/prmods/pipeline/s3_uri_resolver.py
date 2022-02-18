@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from dateutil.relativedelta import relativedelta
-
 
 class OdsDownloaderS3UriResolver:
     _ORG_METADATA_VERSION = "v3"
@@ -23,10 +21,6 @@ class OdsDownloaderS3UriResolver:
             str(date_anchor.month),
             self._ASID_LOOKUP_FILE_NAME,
         )
-
-    def previous_month_asid_lookup(self, date_anchor: datetime) -> str:
-        previous_month_date_anchor = date_anchor - relativedelta(months=1)
-        return self.asid_lookup(previous_month_date_anchor)
 
     def ods_metadata(self, date_anchor: datetime) -> str:
         return self._s3_path(

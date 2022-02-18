@@ -201,7 +201,11 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available():
         assert actual["practices"] == EXPECTED_PRACTICES
         assert actual["ccgs"] == EXPECTED_CCGS
 
-        expected_metadata = {"date-anchor": "2020-01-30T18:44:49+00:00", "build-tag": "61ad1e1c"}
+        expected_metadata = {
+            "date-anchor": "2020-01-30T18:44:49+00:00",
+            "asid-lookup-month": "2020-1",
+            "build-tag": "61ad1e1c",
+        }
         actual_s3_metadata = _read_s3_metadata(output_bucket, output_path)
 
         assert actual_s3_metadata == expected_metadata
@@ -248,7 +252,11 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_not_availabl
         assert actual["practices"] == EXPECTED_PRACTICES
         assert actual["ccgs"] == EXPECTED_CCGS
 
-        expected_metadata = {"date-anchor": "2020-02-27T18:44:49+00:00", "build-tag": "61ad1e1c"}
+        expected_metadata = {
+            "date-anchor": "2020-02-27T18:44:49+00:00",
+            "asid-lookup-month": "2020-1",
+            "build-tag": "61ad1e1c",
+        }
         actual_s3_metadata = _read_s3_metadata(output_bucket, output_path)
 
         assert actual_s3_metadata == expected_metadata
