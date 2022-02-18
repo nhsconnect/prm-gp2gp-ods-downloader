@@ -24,6 +24,7 @@ FAKE_S3_ACCESS_KEY = "testing"
 FAKE_S3_SECRET_KEY = "testing"
 FAKE_S3_REGION = "us-west-1"
 S3_OUTPUT_ODS_METADATA_BUCKET_NAME = "prm-gp2gp-ods-data"
+S3_INPUT_ASID_LOOKUP_BUCKET_NAME = "prm-gp2gp-asid-lookup"
 
 INPUT_ROWS = [
     ["000011357014", "A12345", "Test GP", "Supplier", "system", "Practice", "HT87 1PQ"],
@@ -162,28 +163,30 @@ def _setup():
 
     environ["DATE_ANCHOR"] = "2020-01-30T18:44:49Z"
     environ["OUTPUT_BUCKET"] = S3_OUTPUT_ODS_METADATA_BUCKET_NAME
-    environ["MAPPING_BUCKET"] = "prm-gp2gp-ods-data"
+    environ["MAPPING_BUCKET"] = S3_INPUT_ASID_LOOKUP_BUCKET_NAME
     environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
     environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
     environ["BUILD_TAG"] = "61ad1e1c"
 
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
-    fake_ods = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
-    return fake_s3, fake_ods, s3_client
+    fake_ods_portal = _build_fake_ods(FAKE_ODS_HOST, FAKE_ODS_PORT)
+    return fake_s3, fake_ods_portal, s3_client
 
 
 def test_with_s3():
     _disable_werkzeug_logging()
 
-    fake_s3, fake_ods, s3_client = _setup()
+    fake_s3, fake_ods_portal, s3_client = _setup()
     fake_s3.start()
-    fake_ods.start()
+    fake_ods_portal.start()
 
     year = 2020
     month = 1
 
+    input_bucket = _build_fake_s3_bucket(S3_INPUT_ASID_LOOKUP_BUCKET_NAME, s3_client)
+    input_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
+
     output_bucket = _build_fake_s3_bucket(S3_OUTPUT_ODS_METADATA_BUCKET_NAME, s3_client)
-    output_bucket.upload_fileobj(INPUT_ASID_CSV, f"{year}/{month}/asidLookup.csv.gz")
 
     try:
         main()
@@ -202,6 +205,12 @@ def test_with_s3():
         assert actual_s3_metadata == expected_metadata
 
     finally:
-        fake_ods.stop()
+        input_bucket.objects.all().delete()
+        input_bucket.delete()
+
+        output_bucket.objects.all().delete()
+        output_bucket.delete()
+
+        fake_ods_portal.stop()
         fake_s3.stop()
         environ.clear()
