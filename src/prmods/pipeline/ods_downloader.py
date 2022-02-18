@@ -17,8 +17,8 @@ from prmods.utils.io.s3 import S3DataManager
 
 class OdsDownloader:
     def __init__(self, config: OdsPortalConfig):
-        s3 = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
-        self._s3_manager = S3DataManager(s3)
+        self._s3_client = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
+        self._s3_manager = S3DataManager(self._s3_client)
 
         self._config = config
         self._uris = OdsDownloaderS3UriResolver(
@@ -33,10 +33,20 @@ class OdsDownloader:
             data_fetcher=ods_data_fetcher, observability_probe=probe
         )
 
-    def _read_asid_lookup(self) -> AsidLookup:
-        asid_lookup_s3_path = self._uris.asid_lookup(self._config.date_anchor)
+    def _read_asid_lookup(self, asid_lookup_s3_path: str) -> AsidLookup:
         raw_asid_lookup = self._s3_manager.read_gzip_csv(asid_lookup_s3_path)
         return AsidLookup.from_spine_directory_format(raw_asid_lookup)
+
+    def _read_most_recent_asid_lookup(self) -> AsidLookup:
+        try:
+            asid_lookup_s3_path = self._uris.asid_lookup(self._config.date_anchor)
+            return self._read_asid_lookup(asid_lookup_s3_path)
+
+        except self._s3_client.meta.client.exceptions.NoSuchKey:
+            previous_month_asid_lookup_s3_path = self._uris.previous_month_asid_lookup(
+                self._config.date_anchor
+            )
+            return self._read_asid_lookup(previous_month_asid_lookup_s3_path)
 
     def _write_ods_metadata(self, organisation_metadata: OrganisationMetadata):
         metadata_output_s3_path = self._uris.ods_metadata(self._config.date_anchor)
@@ -49,7 +59,7 @@ class OdsDownloader:
         )
 
     def run(self):
-        asid_lookup = self._read_asid_lookup()
+        asid_lookup = self._read_most_recent_asid_lookup()
         practice_metadata = self._metadata_service.retrieve_practices_with_asids(
             asid_lookup=asid_lookup
         )

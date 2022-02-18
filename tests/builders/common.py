@@ -14,7 +14,7 @@ def an_integer(a=None, b=None):
 
 def a_datetime():
     return datetime(
-        year=an_integer(1, 9999),
+        year=an_integer(1990, 2022),
         month=an_integer(1, 12),
         day=an_integer(1, 28),
         hour=an_integer(0, 23),
