@@ -1,5 +1,4 @@
 import logging
-import sys
 from dataclasses import asdict
 from datetime import datetime
 
@@ -72,7 +71,9 @@ class OdsDownloader:
                     ),
                 },
             )
-            sys.exit(1)
+            raise FileNotFoundError(
+                "ASID lookup files not found for both current and previous month"
+            )
 
     def _read_most_recent_asid_lookup(self) -> AsidLookup:
         try:
