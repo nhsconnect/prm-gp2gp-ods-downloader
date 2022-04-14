@@ -1,8 +1,11 @@
 import json
 import logging
+import sys
 from io import BytesIO
 from os import environ
 from threading import Thread
+from unittest import mock
+from unittest.mock import ANY
 
 import boto3
 from botocore.config import Config
@@ -11,6 +14,7 @@ from werkzeug import Request, Response
 from werkzeug.serving import make_server
 
 from prmods.pipeline.main import main
+from src.prmods.pipeline.main import logger
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"
@@ -271,3 +275,16 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_not_availabl
         fake_ods_portal.stop()
         fake_s3.stop()
         environ.clear()
+
+
+def test_exception_in_main():
+    with mock.patch.object(sys, "exit") as exitSpy:
+        with mock.patch.object(logger, "error") as mock_log_error:
+            main()
+
+    mock_log_error.assert_called_with(
+        ANY,
+        extra={"event": "FAILED_TO_RUN_MAIN", "config": "{}"},
+    )
+
+    exitSpy.assert_called_with("Failed to run main, exiting...")

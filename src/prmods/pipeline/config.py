@@ -42,6 +42,9 @@ class OdsPortalConfig:
     search_url: Optional[str] = ODS_PORTAL_SEARCH_URL
     s3_endpoint_url: Optional[str] = None
 
+    def __str__(self):
+        return str(self.__dict__)
+
     @classmethod
     def from_environment_variables(cls, env_vars):
         return cls(**{field.name: _read_env(field, env_vars) for field in fields(cls)})

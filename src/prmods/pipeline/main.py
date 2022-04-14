@@ -1,4 +1,5 @@
 import logging
+import sys
 from os import environ
 
 from prmods.pipeline.config import OdsPortalConfig
@@ -17,9 +18,14 @@ def _setup_logger():
 
 
 def main():
-    _setup_logger()
-    config = OdsPortalConfig.from_environment_variables(environ)
-    OdsDownloader(config).run()
+    config = {}
+    try:
+        _setup_logger()
+        config = OdsPortalConfig.from_environment_variables(environ)
+        OdsDownloader(config).run()
+    except Exception as ex:
+        logger.error(str(ex), extra={"event": "FAILED_TO_RUN_MAIN", "config": config.__str__()})
+        sys.exit("Failed to run main, exiting...")
 
 
 if __name__ == "__main__":

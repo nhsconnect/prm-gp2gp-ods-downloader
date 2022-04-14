@@ -14,7 +14,6 @@ from prmods.domain.ods_portal.metadata_service import (
 )
 from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsPortalDataFetcher
-from prmods.pipeline.config import OdsPortalConfig
 from prmods.pipeline.s3_uri_resolver import OdsDownloaderS3UriResolver
 from prmods.utils.io.s3 import S3DataManager
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class OdsDownloader:
-    def __init__(self, config: OdsPortalConfig):
+    def __init__(self, config):
         self._s3_client = boto3.resource("s3", endpoint_url=config.s3_endpoint_url)
         self._s3_manager = S3DataManager(self._s3_client)
 
