@@ -16,6 +16,7 @@ def test_reads_from_environment_variables_and_converts_to_required_format():
         "SEARCH_URL": "https://an.endpoint:3000",
         "DATE_ANCHOR": "2020-01-30T18:44:49Z",
         "BUILD_TAG": build_tag,
+        "SHOW_PRISON_PRACTICES_TOGGLE": "True",
     }
 
     expected_config = OdsPortalConfig(
@@ -27,6 +28,7 @@ def test_reads_from_environment_variables_and_converts_to_required_format():
             year=2020, month=1, day=30, hour=18, minute=44, second=49, tzinfo=tzutc()
         ),
         build_tag=build_tag,
+        show_prison_practices_toggle=True,
     )
 
     actual_config = OdsPortalConfig.from_environment_variables(environment)
@@ -51,6 +53,7 @@ def test_read_config_from_environment_when_optional_parameters_are_not_set():
             year=2020, month=1, day=30, hour=18, minute=44, second=49, tzinfo=tzutc()
         ),
         build_tag=build_tag,
+        show_prison_practices_toggle=False,
     )
 
     actual_config = OdsPortalConfig.from_environment_variables(environment)

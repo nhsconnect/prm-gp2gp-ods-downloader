@@ -1,5 +1,5 @@
 import logging
-from dataclasses import MISSING, dataclass, fields
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
@@ -14,23 +14,50 @@ class MissingEnvironmentVariable(Exception):
     pass
 
 
-def _convert_env_value(env_value, config_type):
-    if config_type == datetime:
-        return isoparse(env_value)
-    return env_value
+class InvalidEnvironmentVariableValue(Exception):
+    pass
 
 
-def _read_env(field, env_vars):
-    env_var = field.name.upper()
-    if env_var in env_vars:
-        env_value = env_vars[env_var]
-        return _convert_env_value(env_value, field.type)
-    elif field.default != MISSING:
-        return field.default
-    else:
-        raise MissingEnvironmentVariable(
-            f"Expected environment variable {env_var} was not set, exiting..."
-        )
+class EnvConfig:
+    def __init__(self, env_vars):
+        self._env_vars = env_vars
+
+    def _read_env(self, name: str, optional: bool, converter=None, default=None):  # noqa: C901
+        try:
+            env_var = self._env_vars[name]
+            if converter:
+                return converter(env_var)
+            else:
+                return env_var
+        except KeyError:
+            if optional:
+                return default
+            else:
+                raise MissingEnvironmentVariable(
+                    f"Expected environment variable {name} was not set, exiting..."
+                )
+        except ValueError:
+            raise InvalidEnvironmentVariableValue(
+                f"Expected environment variable {name} value is invalid, exiting..."
+            )
+
+    def read_str(self, name: str) -> str:
+        return self._read_env(name, optional=False)
+
+    def read_optional_str(self, name: str, default: Optional[str] = None) -> str:
+        return self._read_env(name, optional=True, default=default)
+
+    def read_optional_int(self, name: str) -> Optional[int]:
+        return self._read_env(name, optional=True, converter=int)
+
+    def read_optional_bool(self, name: str) -> bool:
+        return self._read_env(name, optional=True, default=False, converter=bool)
+
+    def read_int(self, name: str) -> int:
+        return self._read_env(name, optional=False, converter=int)
+
+    def read_optional_datetime(self, name: str) -> datetime:
+        return self._read_env(name, optional=True, converter=isoparse)
 
 
 @dataclass
@@ -39,7 +66,8 @@ class OdsPortalConfig:
     mapping_bucket: str
     build_tag: str
     date_anchor: datetime
-    search_url: Optional[str] = ODS_PORTAL_SEARCH_URL
+    search_url: Optional[str]
+    show_prison_practices_toggle: Optional[bool]
     s3_endpoint_url: Optional[str] = None
 
     def __str__(self):
@@ -47,4 +75,14 @@ class OdsPortalConfig:
 
     @classmethod
     def from_environment_variables(cls, env_vars):
-        return cls(**{field.name: _read_env(field, env_vars) for field in fields(cls)})
+
+        env = EnvConfig(env_vars)
+        return cls(
+            output_bucket=env.read_str("OUTPUT_BUCKET"),
+            mapping_bucket=env.read_str("MAPPING_BUCKET"),
+            build_tag=env.read_str("BUILD_TAG"),
+            date_anchor=env.read_optional_datetime("DATE_ANCHOR"),
+            search_url=env.read_optional_str("SEARCH_URL", default=ODS_PORTAL_SEARCH_URL),
+            show_prison_practices_toggle=env.read_optional_bool("SHOW_PRISON_PRACTICES_TOGGLE"),
+            s3_endpoint_url=env.read_optional_str("S3_ENDPOINT_URL"),
+        )
