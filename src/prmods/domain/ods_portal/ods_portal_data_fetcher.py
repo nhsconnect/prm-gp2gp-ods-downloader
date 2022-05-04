@@ -10,10 +10,26 @@ class OrganisationDetails:
     name: str
 
 
-PRACTICE_SEARCH_PARAMS = {
+PRACTICE_SEARCH_PARAMS_NON_PRISONS_DEPRECATED = {
     "PrimaryRoleId": "RO177",
     "Status": "Active",
     "NonPrimaryRoleId": "RO76",
+    "Limit": "1000",
+}
+
+ROLES_FOR_COST_CENTRE_PRACTICES = ",".join(
+    [
+        "RO177",  # PRESCRIBING COST CENTRE
+        "RO82",  # PRISON PRESCRIBING COST CENTRE
+        "RO257",  # SECURE TRAINING CENTRE PRESCRIBING COST CENTRE
+        "RO251",  # IMMIGRATION REMOVAL CENTRE PRESCRIBING COST CENTRE
+        "RO260",  # YOUNG OFFENDER INSTITUTION PRESCRIBING COST CENTRE
+    ]
+)
+
+PRACTICE_SEARCH_PARAMS_WITH_MULTIPLE_ROLES = {
+    "Status": "Active",
+    "Roles": ROLES_FOR_COST_CENTRE_PRACTICES,
     "Limit": "1000",
 }
 
@@ -50,7 +66,10 @@ class OdsPortalDataFetcher:
     def fetch_all_practices(
         self, show_prison_practices_toggle: Optional[bool] = False
     ) -> List[OrganisationDetails]:
-        return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS)
+        if show_prison_practices_toggle is True:
+            return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS_WITH_MULTIPLE_ROLES)
+        else:
+            return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS_NON_PRISONS_DEPRECATED)
 
     def fetch_all_ccgs(self) -> List[OrganisationDetails]:
         return self._fetch_organisation_details(CCG_SEARCH_PARAMS)

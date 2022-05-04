@@ -7,7 +7,7 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import (
 from tests.builders.ods_portal import build_ods_organisation_data_response
 
 
-def test_fetch_all_practices_returns_a_list_of_organisation_details():
+def test_fetch_all_practices_returns_org_details_by_role_when_show_prison_practices_toggled_off():
     mock_ods_client = Mock()
     mock_ods_client.fetch_organisation_data.return_value = [
         build_ods_organisation_data_response(name="GP Practice", org_id="A12345"),
@@ -20,7 +20,7 @@ def test_fetch_all_practices_returns_a_list_of_organisation_details():
         OrganisationDetails(name="GP Practice", ods_code="A12345"),
         OrganisationDetails(name="GP Practice 2", ods_code="B12345"),
     ]
-    actual = ods_portal_data_fetcher.fetch_all_practices()
+    actual = ods_portal_data_fetcher.fetch_all_practices(show_prison_practices_toggle=False)
 
     assert actual == expected
     mock_ods_client.fetch_organisation_data.assert_called_once_with(
@@ -28,6 +28,31 @@ def test_fetch_all_practices_returns_a_list_of_organisation_details():
             "PrimaryRoleId": "RO177",
             "Status": "Active",
             "NonPrimaryRoleId": "RO76",
+            "Limit": "1000",
+        }
+    )
+
+
+def test_fetch_all_practices_returns_org_details_when_show_prison_practices_toggled_on():
+    mock_ods_client = Mock()
+    mock_ods_client.fetch_organisation_data.return_value = [
+        build_ods_organisation_data_response(name="GP Practice", org_id="A12345"),
+        build_ods_organisation_data_response(name="GP Practice 2", org_id="B12345"),
+    ]
+
+    ods_portal_data_fetcher = OdsPortalDataFetcher(ods_client=mock_ods_client)
+
+    expected = [
+        OrganisationDetails(name="GP Practice", ods_code="A12345"),
+        OrganisationDetails(name="GP Practice 2", ods_code="B12345"),
+    ]
+    actual = ods_portal_data_fetcher.fetch_all_practices(show_prison_practices_toggle=True)
+
+    assert actual == expected
+    mock_ods_client.fetch_organisation_data.assert_called_once_with(
+        {
+            "Status": "Active",
+            "Roles": "RO177,RO82,RO257,RO251,RO260",
             "Limit": "1000",
         }
     )

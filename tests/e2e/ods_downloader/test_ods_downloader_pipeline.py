@@ -170,6 +170,7 @@ def _setup():
     environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
     environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
     environ["BUILD_TAG"] = "61ad1e1c"
+    environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "False"
 
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
     fake_ods_portal = _build_fake_ods_portal(FAKE_ODS_HOST, FAKE_ODS_PORT)

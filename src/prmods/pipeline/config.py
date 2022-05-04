@@ -50,8 +50,14 @@ class EnvConfig:
     def read_optional_int(self, name: str) -> Optional[int]:
         return self._read_env(name, optional=True, converter=int)
 
+    @staticmethod
+    def _bool_string_converter(string: str) -> bool:
+        return True if string == "True" else False
+
     def read_optional_bool(self, name: str) -> bool:
-        return self._read_env(name, optional=True, default=False, converter=bool)
+        return self._read_env(
+            name, optional=True, default=False, converter=self._bool_string_converter
+        )
 
     def read_int(self, name: str) -> int:
         return self._read_env(name, optional=False, converter=int)
