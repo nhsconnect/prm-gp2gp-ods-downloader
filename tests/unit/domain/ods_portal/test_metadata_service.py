@@ -11,6 +11,28 @@ from prmods.domain.ods_portal.metadata_service import (
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
 
 
+def test_calls_fetch_all_practices_with_toggle_param():
+    # given
+    mock_data_fetcher = Mock()
+    mock_observability_probe = Mock()
+    mock_data_fetcher.fetch_all_practices.return_value = [
+        OrganisationDetails(name="GP Practice", ods_code="A12345")
+    ]
+    asid_lookup = AsidLookup([OdsAsid("A12345", "123456789123")])
+
+    metadata_service = Gp2gpOrganisationMetadataService(
+        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
+    )
+
+    # when
+    metadata_service.retrieve_practices_with_asids(
+        asid_lookup=asid_lookup, show_prison_practices_toggle=True
+    )
+
+    # then
+    mock_data_fetcher.fetch_all_practices.assert_called_with(show_prison_practices_toggle=True)
+
+
 def test_returns_single_practice():
     mock_data_fetcher = Mock()
     mock_observability_probe = Mock()
@@ -149,7 +171,7 @@ class FakeDataFetcher:
             allocation.ccg.ods_code: allocation.practices for allocation in ccgs
         }
 
-    def fetch_all_practices(self):
+    def fetch_all_practices(self, show_prison_practices_toggle=False):
         return self._practices
 
     def fetch_all_ccgs(self) -> List[OrganisationDetails]:

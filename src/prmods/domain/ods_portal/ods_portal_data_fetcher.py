@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Protocol
+from typing import List, Optional, Protocol
 
 from prmods.domain.ods_portal.ods_portal_client import OdsPortalClient
 
@@ -31,7 +31,9 @@ CCG_PRACTICES_SEARCH_PARAMS = {
 
 
 class OdsDataSource(Protocol):
-    def fetch_all_practices(self) -> List[OrganisationDetails]:
+    def fetch_all_practices(
+        self, show_prison_practices_toggle: Optional[bool] = False
+    ) -> List[OrganisationDetails]:
         ...
 
     def fetch_all_ccgs(self) -> List[OrganisationDetails]:
@@ -45,7 +47,9 @@ class OdsPortalDataFetcher:
     def __init__(self, ods_client: OdsPortalClient):
         self._ods_client = ods_client
 
-    def fetch_all_practices(self) -> List[OrganisationDetails]:
+    def fetch_all_practices(
+        self, show_prison_practices_toggle: Optional[bool] = False
+    ) -> List[OrganisationDetails]:
         return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS)
 
     def fetch_all_ccgs(self) -> List[OrganisationDetails]:

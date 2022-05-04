@@ -92,7 +92,8 @@ class OdsDownloader:
     def run(self):
         asid_lookup = self._read_most_recent_asid_lookup()
         practice_metadata = self._metadata_service.retrieve_practices_with_asids(
-            asid_lookup=asid_lookup
+            asid_lookup=asid_lookup,
+            show_prison_practices_toggle=self._config.show_prison_practices_toggle,
         )
         ccg_metadata = self._metadata_service.retrieve_ccg_practice_allocations(
             canonical_practice_list=practice_metadata

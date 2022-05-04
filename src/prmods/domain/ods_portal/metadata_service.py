@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger, getLogger
-from typing import Iterable, List, Set
+from typing import Iterable, List, Optional, Set
 
 from dateutil.tz import tzutc
 
@@ -71,8 +71,12 @@ class Gp2gpOrganisationMetadataService:
         self._data_fetcher = data_fetcher
         self._probe = observability_probe
 
-    def retrieve_practices_with_asids(self, asid_lookup: AsidLookup) -> List[PracticeDetails]:
-        practices = self._data_fetcher.fetch_all_practices()
+    def retrieve_practices_with_asids(
+        self, asid_lookup: AsidLookup, show_prison_practices_toggle: Optional[bool] = False
+    ) -> List[PracticeDetails]:
+        practices = self._data_fetcher.fetch_all_practices(
+            show_prison_practices_toggle=show_prison_practices_toggle
+        )
         unique_practices = self._remove_duplicate_organisations(practices)
 
         return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
