@@ -4,6 +4,7 @@ import sys
 from io import BytesIO
 from os import environ
 from threading import Thread
+from typing import Optional
 from unittest import mock
 from unittest.mock import ANY
 
@@ -47,6 +48,7 @@ MOCK_PRACTICE_RESPONSE_CONTENT = (
     b'{"Name": "Test GP 2 Duplicate", "OrgId": "B12345"}, '
     b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
 )
+
 MOCK_CCG_RESPONSE_CONTENT = (
     b'{"Organisations": [{"Name": "Test CCG", "OrgId": "12A"}, '
     b'{"Name": "Test CCG 2", "OrgId": "13B"}, '
@@ -87,17 +89,57 @@ class ThreadedServer:
 
 
 @Request.application
-def fake_ods_application(request):
+def fake_ods_application_deprecated(request):
     primary_role = request.args.get("PrimaryRoleId")
     target_org_id = request.args.get("TargetOrgId")
 
     return Response(
-        _get_fake_response(primary_role, target_org_id),
+        _get_fake_response_deprecated(primary_role, target_org_id),
         mimetype="application/json",
     )
 
 
-def _get_fake_response(primary_role, target_org_id):
+@Request.application
+def fake_ods_application(request):
+    primary_role = request.args.get("PrimaryRoleId")
+    target_org_id = request.args.get("TargetOrgId")
+    roles = request.args.get("Roles")
+    return Response(
+        _get_fake_response(primary_role, target_org_id, roles),
+        mimetype="application/json",
+    )
+
+
+def _get_fake_response(primary_role: Optional[str], target_org_id: Optional[str], roles):
+    target_org_id_lookup = {
+        "12A": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1,
+        "13B": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2,
+        "14C": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3,
+    }
+    primary_role_lookup = {
+        "RO177": MOCK_PRACTICE_RESPONSE_CONTENT,
+        "RO98": MOCK_CCG_RESPONSE_CONTENT,
+    }
+
+    roles_lookup = {"RO177": MOCK_PRACTICE_RESPONSE_CONTENT, "RO82": MOCK_PRACTICE_RESPONSE_CONTENT}
+
+    # roles_lookup = {
+    #     "RO177": MOCK_PRACTICE_RESPONSE_CONTENT,
+    #     "RO82": MOCK_PRACTICE_RESPONSE_CONTENT,
+    #     "RO257": MOCK_PRACTICE_RESPONSE_CONTENT,
+    #     "RO251": MOCK_PRACTICE_RESPONSE_CONTENT,
+    #     "RO260": MOCK_PRACTICE_RESPONSE_CONTENT
+    # }
+
+    if primary_role:
+        return primary_role_lookup[primary_role]
+    elif target_org_id:
+        return target_org_id_lookup[target_org_id]
+    else:
+        return roles_lookup[roles]
+
+
+def _get_fake_response_deprecated(primary_role, target_org_id):
     target_org_id_lookup = {
         "12A": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1,
         "13B": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2,
@@ -116,6 +158,11 @@ def _get_fake_response(primary_role, target_org_id):
 
 def _build_fake_ods_portal(host, port):
     server = make_server(host, port, fake_ods_application)
+    return ThreadedServer(server)
+
+
+def _build_fake_ods_portal_deprecated(host, port):
+    server = make_server(host, port, fake_ods_application_deprecated)
     return ThreadedServer(server)
 
 
@@ -170,17 +217,44 @@ def _setup():
     environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
     environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
     environ["BUILD_TAG"] = "61ad1e1c"
-    environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "False"
+    environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "True"
 
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
     fake_ods_portal = _build_fake_ods_portal(FAKE_ODS_HOST, FAKE_ODS_PORT)
     return fake_s3, fake_ods_portal, s3_client
 
 
-def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available():
+def _setup_deprecated_show_prison_practices_toggled_off():
+    s3_client = boto3.resource(
+        "s3",
+        endpoint_url=FAKE_S3_URL,
+        aws_access_key_id=FAKE_S3_ACCESS_KEY,
+        aws_secret_access_key=FAKE_S3_SECRET_KEY,
+        config=Config(signature_version="s3v4"),
+        region_name=FAKE_S3_REGION,
+    )
+
+    environ["AWS_ACCESS_KEY_ID"] = "testing"
+    environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    environ["AWS_DEFAULT_REGION"] = "us-west-1"
+
+    environ["OUTPUT_BUCKET"] = S3_OUTPUT_ODS_METADATA_BUCKET_NAME
+    environ["MAPPING_BUCKET"] = S3_INPUT_ASID_LOOKUP_BUCKET_NAME
+    environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
+    environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
+    environ["BUILD_TAG"] = "61ad1e1c"
+    environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "False"
+
+    fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
+    fake_ods_portal = _build_fake_ods_portal_deprecated(FAKE_ODS_HOST, FAKE_ODS_PORT)
+    return fake_s3, fake_ods_portal, s3_client
+
+
+# TODO: remove test as show_prison_practices_toggled_off
+def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available_prisons_toggled_off():
     _disable_werkzeug_logging()
 
-    fake_s3, fake_ods_portal, s3_client = _setup()
+    fake_s3, fake_ods_portal, s3_client = _setup_deprecated_show_prison_practices_toggled_off()
     fake_s3.start()
     fake_ods_portal.start()
 
