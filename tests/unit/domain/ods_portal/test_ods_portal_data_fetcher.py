@@ -52,8 +52,7 @@ def test_fetch_all_practices_returns_org_details_when_show_prison_practices_togg
     mock_ods_client.fetch_organisation_data.assert_called_once_with(
         {
             "Status": "Active",
-            "Roles": "RO177",
-            # "Roles": "RO177,RO82,RO257,RO251,RO260",
+            "Roles": "RO177,RO82,RO257,RO251,RO260",
             "Limit": "1000",
         }
     )
