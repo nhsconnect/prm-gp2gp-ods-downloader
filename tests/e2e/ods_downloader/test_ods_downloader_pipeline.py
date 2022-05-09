@@ -41,7 +41,24 @@ INPUT_ROWS = [
     ["000044357014", "D12345", "Test GP 4", "Supplier", "System", "Practice", "HQ87 1PQ"],
     ["000055357014", "E12345", "Test GP 5", "Supplier", "System", "Practice", "HZ87 1PQ"],
     ["000055357016", "P12346", "Test GP 6 (prison)", "Supplier", "System", "Practice", "HZ87 1PQ"],
-    ["000055357017", "P12347", "Test GP 7 (prison)", "Supplier", "System", "Practice", "HZ87 1PQ"],
+    [
+        "000055357017",
+        "Y00510",
+        "Test GP 7 (prison - filtered out)",
+        "Supplier",
+        "System",
+        "Practice",
+        "HZ87 1PQ",
+    ],
+    [
+        "000055357018",
+        "Y05169",
+        "Test GP 8 (prison - filtered out)",
+        "Supplier",
+        "System",
+        "Prison practice",
+        "HZ87 1PQ",
+    ],
 ]
 
 MOCK_PRACTICE_RESPONSE_CONTENT_DEPRECATED = (
@@ -57,7 +74,7 @@ MOCK_PRACTICE_RESPONSE_CONTENT = (
     b'{"Name": "Test GP 2 Duplicate", "OrgId": "B12345"}, '
     b'{"Name": "Test GP 3", "OrgId": "C12345"},'
     b'{"Name": "Test GP 6 (prison)", "OrgId": "P12346"},'
-    b'{"Name": "Test GP 7 (prison)", "OrgId": "P12347"}]}'
+    b'{"Name": "Test GP 7 (prison - filtered out)", "OrgId": "Y05169"}]}'
 )
 
 MOCK_CCG_RESPONSE_CONTENT = (
@@ -85,7 +102,6 @@ EXPECTED_PRACTICES = [
     {"ods_code": "B12345", "name": "Test GP 2", "asids": ["000022357014"]},
     {"ods_code": "C12345", "name": "Test GP 3", "asids": ["000033357014", "123433357014"]},
     {"ods_code": "P12346", "name": "Test GP 6 (prison)", "asids": ["000055357016"]},
-    {"ods_code": "P12347", "name": "Test GP 7 (prison)", "asids": ["000055357017"]},
 ]
 
 EXPECTED_CCGS = [
