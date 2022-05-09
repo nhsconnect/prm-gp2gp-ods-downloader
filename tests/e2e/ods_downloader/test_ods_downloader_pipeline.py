@@ -40,13 +40,24 @@ INPUT_ROWS = [
     ["123433357014", "C12345", "Test GP 3", "Supplier", "Other System", "Practice", "HP87 1PQ"],
     ["000044357014", "D12345", "Test GP 4", "Supplier", "System", "Practice", "HQ87 1PQ"],
     ["000055357014", "E12345", "Test GP 5", "Supplier", "System", "Practice", "HZ87 1PQ"],
+    ["000055357016", "P12346", "Test GP 6 (prison)", "Supplier", "System", "Practice", "HZ87 1PQ"],
+    ["000055357017", "P12347", "Test GP 7 (prison)", "Supplier", "System", "Practice", "HZ87 1PQ"],
 ]
+
+MOCK_PRACTICE_RESPONSE_CONTENT_DEPRECATED = (
+    b'{"Organisations": [{"Name": "Test GP", "OrgId": "A12345"}, '
+    b'{"Name": "Test GP 2", "OrgId": "B12345"}, '
+    b'{"Name": "Test GP 2 Duplicate", "OrgId": "B12345"}, '
+    b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
+)
 
 MOCK_PRACTICE_RESPONSE_CONTENT = (
     b'{"Organisations": [{"Name": "Test GP", "OrgId": "A12345"}, '
     b'{"Name": "Test GP 2", "OrgId": "B12345"}, '
     b'{"Name": "Test GP 2 Duplicate", "OrgId": "B12345"}, '
-    b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
+    b'{"Name": "Test GP 3", "OrgId": "C12345"},'
+    b'{"Name": "Test GP 6 (prison)", "OrgId": "P12346"},'
+    b'{"Name": "Test GP 7 (prison)", "OrgId": "P12347"}]}'
 )
 
 MOCK_CCG_RESPONSE_CONTENT = (
@@ -63,10 +74,18 @@ MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3 = (
     b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
 )
 
+EXPECTED_PRACTICES_DEPRECATED = [
+    {"ods_code": "A12345", "name": "Test GP", "asids": ["000011357014"]},
+    {"ods_code": "B12345", "name": "Test GP 2", "asids": ["000022357014"]},
+    {"ods_code": "C12345", "name": "Test GP 3", "asids": ["000033357014", "123433357014"]},
+]
+
 EXPECTED_PRACTICES = [
     {"ods_code": "A12345", "name": "Test GP", "asids": ["000011357014"]},
     {"ods_code": "B12345", "name": "Test GP 2", "asids": ["000022357014"]},
     {"ods_code": "C12345", "name": "Test GP 3", "asids": ["000033357014", "123433357014"]},
+    {"ods_code": "P12346", "name": "Test GP 6 (prison)", "asids": ["000055357016"]},
+    {"ods_code": "P12347", "name": "Test GP 7 (prison)", "asids": ["000055357017"]},
 ]
 
 EXPECTED_CCGS = [
@@ -105,7 +124,7 @@ def _get_fake_response(primary_role: Optional[str], target_org_id: Optional[str]
         "14C": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3,
     }
     primary_role_lookup = {
-        "RO177": MOCK_PRACTICE_RESPONSE_CONTENT,
+        "RO177": MOCK_PRACTICE_RESPONSE_CONTENT_DEPRECATED,
         "RO98": MOCK_CCG_RESPONSE_CONTENT,
     }
 
@@ -210,7 +229,7 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available_pr
 
         assert actual["year"] == year
         assert actual["month"] == month
-        assert actual["practices"] == EXPECTED_PRACTICES
+        assert actual["practices"] == EXPECTED_PRACTICES_DEPRECATED
         assert actual["ccgs"] == EXPECTED_CCGS
 
         expected_metadata = {
