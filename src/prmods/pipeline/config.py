@@ -54,9 +54,9 @@ class EnvConfig:
     def _bool_string_converter(string: str) -> bool:
         return True if string == "True" else False
 
-    def read_optional_bool(self, name: str) -> bool:
+    def read_optional_bool(self, name: str, default: Optional[bool] = False) -> bool:
         return self._read_env(
-            name, optional=True, default=False, converter=self._bool_string_converter
+            name, optional=True, default=default, converter=self._bool_string_converter
         )
 
     def read_int(self, name: str) -> int:
@@ -89,6 +89,8 @@ class OdsPortalConfig:
             build_tag=env.read_str("BUILD_TAG"),
             date_anchor=env.read_optional_datetime("DATE_ANCHOR"),
             search_url=env.read_optional_str("SEARCH_URL", default=ODS_PORTAL_SEARCH_URL),
-            show_prison_practices_toggle=env.read_optional_bool("SHOW_PRISON_PRACTICES_TOGGLE"),
+            show_prison_practices_toggle=env.read_optional_bool(
+                "SHOW_PRISON_PRACTICES_TOGGLE", default=True
+            ),
             s3_endpoint_url=env.read_optional_str("S3_ENDPOINT_URL"),
         )

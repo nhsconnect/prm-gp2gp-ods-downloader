@@ -31,6 +31,6 @@ def test_resolver_returns_correct_ods_metadata_uri_given_date_anchor():
 
     actual = uri_resolver.ods_metadata(date_anchor)
 
-    expected = f"s3://{ods_metadata_bucket}/v3/{year}/{month}/organisationMetadata.json"
+    expected = f"s3://{ods_metadata_bucket}/v4/{year}/{month}/organisationMetadata.json"
 
     assert actual == expected

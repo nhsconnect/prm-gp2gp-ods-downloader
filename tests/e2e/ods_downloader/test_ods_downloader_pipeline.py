@@ -194,7 +194,7 @@ def _setup():
     environ["S3_ENDPOINT_URL"] = FAKE_S3_URL
     environ["SEARCH_URL"] = FAKE_ODS_PORTAL_URL
     environ["BUILD_TAG"] = "61ad1e1c"
-    environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "True"
+    # environ["SHOW_PRISON_PRACTICES_TOGGLE"] = "True"
 
     fake_s3 = _build_fake_s3(FAKE_S3_HOST, FAKE_S3_PORT)
     fake_ods_portal = _build_fake_ods_portal(FAKE_ODS_HOST, FAKE_ODS_PORT)
@@ -224,7 +224,7 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available_pr
 
         main()
 
-        output_path = f"v3/{year}/{month}/organisationMetadata.json"
+        output_path = f"v4/{year}/{month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
@@ -273,7 +273,7 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available():
         environ["DATE_ANCHOR"] = "2020-01-30T18:44:49Z"
         main()
 
-        output_path = f"v3/{year}/{month}/organisationMetadata.json"
+        output_path = f"v4/{year}/{month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
@@ -324,7 +324,7 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_not_availabl
 
         main()
 
-        output_path = f"v3/{year}/{current_month}/organisationMetadata.json"
+        output_path = f"v4/{year}/{current_month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
