@@ -1,4 +1,3 @@
-import logging
 from dataclasses import dataclass
 from datetime import datetime
 from logging import Logger, getLogger
@@ -8,11 +7,6 @@ from dateutil.tz import tzutc
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsDataSource, OrganisationDetails
-from prmods.domain.ods_portal.practice_ods_codes_for_hjis_to_filter_out import (
-    practice_ods_codes_for_hjis_to_filter_out,
-)
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -83,26 +77,9 @@ class Gp2gpOrganisationMetadataService:
         practices = self._data_fetcher.fetch_all_practices(
             show_prison_practices_toggle=show_prison_practices_toggle
         )
+        unique_practices = self._remove_duplicate_organisations(practices)
 
-        if show_prison_practices_toggle:
-            filtered_practices = []
-            for practice in practices:
-                if practice.ods_code not in practice_ods_codes_for_hjis_to_filter_out:
-                    filtered_practices.append(practice)
-                else:
-                    logger.info(
-                        "Practice excluded with ODS code: " + practice.ods_code,
-                        extra={
-                            "event": "PRACTICE_EXCLUDED_BY_ODS_CODE",
-                            "practice_name": practice.name,
-                            "practice_ods_code": practice.ods_code,
-                        },
-                    )
-            unique_practices_filtered = self._remove_duplicate_organisations(filtered_practices)
-            return list(self._enrich_practices_with_asids(unique_practices_filtered, asid_lookup))
-        else:
-            unique_practices = self._remove_duplicate_organisations(practices)
-            return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
+        return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
 
     def retrieve_ccg_practice_allocations(
         self, canonical_practice_list: List[PracticeDetails]

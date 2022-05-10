@@ -12,6 +12,7 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
 
 
 def test_calls_fetch_all_practices_with_toggle_param():
+    # given
     mock_data_fetcher = Mock()
     mock_observability_probe = Mock()
     mock_data_fetcher.fetch_all_practices.return_value = [
@@ -23,44 +24,13 @@ def test_calls_fetch_all_practices_with_toggle_param():
         data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
     )
 
+    # when
     metadata_service.retrieve_practices_with_asids(
         asid_lookup=asid_lookup, show_prison_practices_toggle=True
     )
 
+    # then
     mock_data_fetcher.fetch_all_practices.assert_called_with(show_prison_practices_toggle=True)
-
-
-def test_filters_out_prison_practices_when_show_prison_practices_toggle_toggled_on():
-    mock_data_fetcher = Mock()
-    mock_observability_probe = Mock()
-    mock_data_fetcher.fetch_all_practices.return_value = [
-        OrganisationDetails(name="GP Practice", ods_code="A12345"),
-        OrganisationDetails(name="GP Practice - prison keep", ods_code="PRISONKEEP1"),
-        OrganisationDetails(name="GP Practice - prison filter", ods_code="Y05123"),
-    ]
-    asid_lookup = AsidLookup(
-        [
-            OdsAsid("A12345", "123456789123"),
-            OdsAsid("PRISONKEEP1", "123456789124"),
-            OdsAsid("Y05123", "123456789125"),
-        ]
-    )
-
-    metadata_service = Gp2gpOrganisationMetadataService(
-        data_fetcher=mock_data_fetcher, observability_probe=mock_observability_probe
-    )
-
-    expected = [
-        PracticeDetails(asids=["123456789123"], ods_code="A12345", name="GP Practice"),
-        PracticeDetails(
-            asids=["123456789124"], ods_code="PRISONKEEP1", name="GP Practice - prison keep"
-        ),
-    ]
-    actual = metadata_service.retrieve_practices_with_asids(
-        asid_lookup, show_prison_practices_toggle=True
-    )
-
-    assert actual == expected
 
 
 def test_returns_single_practice():
