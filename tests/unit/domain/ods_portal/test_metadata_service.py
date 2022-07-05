@@ -4,8 +4,8 @@ from unittest.mock import Mock
 
 from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 from prmods.domain.ods_portal.metadata_service import (
-    CcgDetails,
     Gp2gpOrganisationMetadataService,
+    IcbDetails,
     PracticeDetails,
 )
 from prmods.domain.ods_portal.ods_portal_data_fetcher import OrganisationDetails
@@ -158,35 +158,35 @@ def test_returns_unique_practices():
 
 
 @dataclass
-class CCGPracticeAllocation:
-    ccg: OrganisationDetails
+class ICBPracticeAllocation:
+    icb: OrganisationDetails
     practices: List[OrganisationDetails]
 
 
 class FakeDataFetcher:
-    def __init__(self, ccgs: Iterable[CCGPracticeAllocation]):
-        self._ccgs = [allocation.ccg for allocation in ccgs]
-        self._practices = [practice for ccg in ccgs for practice in ccg.practices]
-        self._practices_by_ccg_ods = {
-            allocation.ccg.ods_code: allocation.practices for allocation in ccgs
+    def __init__(self, icbs: Iterable[ICBPracticeAllocation]):
+        self._icbs = [allocation.icb for allocation in icbs]
+        self._practices = [practice for icb in icbs for practice in icb.practices]
+        self._practices_by_icb_ods = {
+            allocation.icb.ods_code: allocation.practices for allocation in icbs
         }
 
     def fetch_all_practices(self, show_prison_practices_toggle=False):
         return self._practices
 
-    def fetch_all_ccgs(self) -> List[OrganisationDetails]:
-        return self._ccgs
+    def fetch_all_icbs(self) -> List[OrganisationDetails]:
+        return self._icbs
 
-    def fetch_practices_for_ccg(self, ccg_ods_code: str) -> List[OrganisationDetails]:
-        return self._practices_by_ccg_ods[ccg_ods_code]
+    def fetch_practices_for_icb(self, icb_ods_code: str) -> List[OrganisationDetails]:
+        return self._practices_by_icb_ods[icb_ods_code]
 
 
-def test_returns_single_ccg_with_one_practice():
+def test_returns_single_icb_with_one_practice():
     mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
-        ccgs=[
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="X12", name="CCG"),
+        icbs=[
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="X12", name="ICB"),
                 practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
             )
         ]
@@ -197,29 +197,29 @@ def test_returns_single_ccg_with_one_practice():
 
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
-    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
+    expected = [IcbDetails(ods_code="X12", name="ICB", practices=["A12345"])]
 
-    actual = metadata_service.retrieve_ccg_practice_allocations(
+    actual = metadata_service.retrieve_icb_practice_allocations(
         canonical_practice_list=canonical_practice_list
     )
 
     assert actual == expected
 
 
-def test_returns_multiple_ccgs_with_at_least_one_practice():
+def test_returns_multiple_icbs_with_at_least_one_practice():
     mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
-        ccgs=[
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="12A", name="CCG"),
+        icbs=[
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="12A", name="ICB"),
                 practices=[],
             ),
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="34A", name="CCG 2"),
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="34A", name="ICB 2"),
                 practices=[OrganisationDetails(ods_code="C45678", name="GP Practice")],
             ),
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="56A", name="CCG 3"),
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="56A", name="ICB 3"),
                 practices=[
                     OrganisationDetails(ods_code="D34567", name="GP Practice 2"),
                     OrganisationDetails(ods_code="E98765", name="GP Practice 3"),
@@ -238,27 +238,27 @@ def test_returns_multiple_ccgs_with_at_least_one_practice():
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
     expected = [
-        CcgDetails(ods_code="34A", name="CCG 2", practices=["C45678"]),
-        CcgDetails(ods_code="56A", name="CCG 3", practices=["D34567", "E98765", "F23456"]),
+        IcbDetails(ods_code="34A", name="ICB 2", practices=["C45678"]),
+        IcbDetails(ods_code="56A", name="ICB 3", practices=["D34567", "E98765", "F23456"]),
     ]
 
-    actual = metadata_service.retrieve_ccg_practice_allocations(
+    actual = metadata_service.retrieve_icb_practice_allocations(
         canonical_practice_list=canonical_practice_list
     )
 
     assert actual == expected
 
 
-def test_returns_unique_ccgs():
+def test_returns_unique_icbs():
     mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
-        ccgs=[
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="X12", name="CCG"),
+        icbs=[
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="X12", name="ICB"),
                 practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
             ),
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="X12", name="Another CCG"),
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="X12", name="Another ICB"),
                 practices=[OrganisationDetails(ods_code="A12345", name="GP Practice")],
             ),
         ]
@@ -269,21 +269,21 @@ def test_returns_unique_ccgs():
 
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
-    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
+    expected = [IcbDetails(ods_code="X12", name="ICB", practices=["A12345"])]
 
-    actual = metadata_service.retrieve_ccg_practice_allocations(canonical_practice_list)
+    actual = metadata_service.retrieve_icb_practice_allocations(canonical_practice_list)
 
     mock_observability_probe.record_duplicate_organisation.assert_called_once_with("X12")
 
     assert actual == expected
 
 
-def test_filters_out_ccg_practice_that_are_not_in_the_canonical_list():
+def test_filters_out_icb_practice_that_are_not_in_the_canonical_list():
     mock_observability_probe = Mock()
     fake_data_fetcher = FakeDataFetcher(
-        ccgs=[
-            CCGPracticeAllocation(
-                ccg=OrganisationDetails(ods_code="X12", name="CCG"),
+        icbs=[
+            ICBPracticeAllocation(
+                icb=OrganisationDetails(ods_code="X12", name="ICB"),
                 practices=[
                     OrganisationDetails(ods_code="A12345", name="GP Practice"),
                     OrganisationDetails(ods_code="A12346", name="Other Practice"),
@@ -297,9 +297,9 @@ def test_filters_out_ccg_practice_that_are_not_in_the_canonical_list():
 
     metadata_service = Gp2gpOrganisationMetadataService(fake_data_fetcher, mock_observability_probe)
 
-    expected = [CcgDetails(ods_code="X12", name="CCG", practices=["A12345"])]
+    expected = [IcbDetails(ods_code="X12", name="ICB", practices=["A12345"])]
 
-    actual = metadata_service.retrieve_ccg_practice_allocations(
+    actual = metadata_service.retrieve_icb_practice_allocations(
         canonical_practice_list=canonical_practice_list
     )
 

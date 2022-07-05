@@ -2,7 +2,7 @@ from datetime import datetime
 
 
 class OdsDownloaderS3UriResolver:
-    _ORG_METADATA_VERSION = "v4"
+    _ORG_METADATA_VERSION = "v5"
     _ORG_METADATA_FILE_NAME = "organisationMetadata.json"
     _ASID_LOOKUP_FILE_NAME = "asidLookup.csv.gz"
 

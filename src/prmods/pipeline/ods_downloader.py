@@ -95,12 +95,12 @@ class OdsDownloader:
             asid_lookup=asid_lookup,
             show_prison_practices_toggle=self._config.show_prison_practices_toggle,
         )
-        ccg_metadata = self._metadata_service.retrieve_ccg_practice_allocations(
+        icb_metadata = self._metadata_service.retrieve_icb_practice_allocations(
             canonical_practice_list=practice_metadata
         )
-        organisation_metadata = OrganisationMetadata.from_practice_and_ccg_lists(
+        organisation_metadata = OrganisationMetadata.from_practice_and_icb_lists(
             practice_metadata,
-            ccg_metadata,
+            icb_metadata,
             self._config.date_anchor.year,
             self._config.date_anchor.month,
         )

@@ -10,7 +10,7 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsDataSource, Orga
 
 
 @dataclass
-class CcgDetails:
+class IcbDetails:
     ods_code: str
     name: str
     practices: List[str]
@@ -29,16 +29,16 @@ class OrganisationMetadata:
     year: int
     month: int
     practices: List[PracticeDetails]
-    ccgs: List[CcgDetails]
+    icbs: List[IcbDetails]
 
     @classmethod
-    def from_practice_and_ccg_lists(
-        cls, practices: List[PracticeDetails], ccgs: List[CcgDetails], year: int, month: int
+    def from_practice_and_icb_lists(
+        cls, practices: List[PracticeDetails], icbs: List[IcbDetails], year: int, month: int
     ):
         return cls(
             generated_on=datetime.now(tzutc()),
             practices=practices,
-            ccgs=ccgs,
+            icbs=icbs,
             year=year,
             month=month,
         )
@@ -81,32 +81,32 @@ class Gp2gpOrganisationMetadataService:
 
         return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
 
-    def retrieve_ccg_practice_allocations(
+    def retrieve_icb_practice_allocations(
         self, canonical_practice_list: List[PracticeDetails]
-    ) -> List[CcgDetails]:
-        ccgs = self._data_fetcher.fetch_all_ccgs()
-        unique_ccgs = self._remove_duplicate_organisations(ccgs)
+    ) -> List[IcbDetails]:
+        icbs = self._data_fetcher.fetch_all_icbs()
+        unique_icbs = self._remove_duplicate_organisations(icbs)
         canonical_practice_ods_codes = {practice.ods_code for practice in canonical_practice_list}
-        ccg_practice_allocations = [
-            self._fetch_ccg_practice_allocation(ccg, canonical_practice_ods_codes)
-            for ccg in unique_ccgs
+        icb_practice_allocations = [
+            self._fetch_icb_practice_allocation(icb, canonical_practice_ods_codes)
+            for icb in unique_icbs
         ]
-        ccgs_containing_practices = [
-            ccg for ccg in ccg_practice_allocations if len(ccg.practices) > 0
+        icbs_containing_practices = [
+            icb for icb in icb_practice_allocations if len(icb.practices) > 0
         ]
-        return ccgs_containing_practices
+        return icbs_containing_practices
 
-    def _fetch_ccg_practice_allocation(
-        self, ccg: OrganisationDetails, canonical_practice_ods_codes: Set[str]
-    ) -> CcgDetails:
-        ccg_practices = self._data_fetcher.fetch_practices_for_ccg(ccg.ods_code)
+    def _fetch_icb_practice_allocation(
+        self, icb: OrganisationDetails, canonical_practice_ods_codes: Set[str]
+    ) -> IcbDetails:
+        icb_practices = self._data_fetcher.fetch_practices_for_icb(icb.ods_code)
 
-        return CcgDetails(
-            ods_code=ccg.ods_code,
-            name=ccg.name,
+        return IcbDetails(
+            ods_code=icb.ods_code,
+            name=icb.name,
             practices=[
                 practice.ods_code
-                for practice in ccg_practices
+                for practice in icb_practices
                 if practice.ods_code in canonical_practice_ods_codes
             ],
         )

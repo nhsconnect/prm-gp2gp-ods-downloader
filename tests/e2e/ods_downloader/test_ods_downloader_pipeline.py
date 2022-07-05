@@ -60,16 +60,16 @@ MOCK_PRACTICE_RESPONSE_CONTENT = (
     b'{"Name": "Test GP 7 (prison)", "OrgId": "P12347"}]}'
 )
 
-MOCK_CCG_RESPONSE_CONTENT = (
-    b'{"Organisations": [{"Name": "Test CCG", "OrgId": "12A"}, '
-    b'{"Name": "Test CCG 2", "OrgId": "13B"}, '
-    b'{"Name": "Test CCG 3", "OrgId": "14C"}]}'
+MOCK_ICB_RESPONSE_CONTENT = (
+    b'{"Organisations": [{"Name": "Test ICB", "OrgId": "12A"}, '
+    b'{"Name": "Test ICB 2", "OrgId": "13B"}, '
+    b'{"Name": "Test ICB 3", "OrgId": "14C"}]}'
 )
-MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1 = (
+MOCK_ICB_PRACTICES_RESPONSE_CONTENT_1 = (
     b'{"Organisations": [{"Name": "Test GP", "OrgId": "A12345"}]}'
 )
-MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2 = b'{"Organisations": []} '
-MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3 = (
+MOCK_ICB_PRACTICES_RESPONSE_CONTENT_2 = b'{"Organisations": []} '
+MOCK_ICB_PRACTICES_RESPONSE_CONTENT_3 = (
     b'{"Organisations": [{"Name": "Test GP 2", "OrgId": "B12345"}, '
     b'{"Name": "Test GP 3", "OrgId": "C12345"}]}'
 )
@@ -88,9 +88,9 @@ EXPECTED_PRACTICES = [
     {"ods_code": "P12347", "name": "Test GP 7 (prison)", "asids": ["000055357017"]},
 ]
 
-EXPECTED_CCGS = [
-    {"ods_code": "12A", "name": "Test CCG", "practices": ["A12345"]},
-    {"ods_code": "14C", "name": "Test CCG 3", "practices": ["B12345", "C12345"]},
+EXPECTED_ICBS = [
+    {"ods_code": "12A", "name": "Test ICB", "practices": ["A12345"]},
+    {"ods_code": "14C", "name": "Test ICB 3", "practices": ["B12345", "C12345"]},
 ]
 
 
@@ -119,13 +119,13 @@ def fake_ods_application(request):
 
 def _get_fake_response(primary_role: Optional[str], target_org_id: Optional[str]):
     target_org_id_lookup = {
-        "12A": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_1,
-        "13B": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_2,
-        "14C": MOCK_CCG_PRACTICES_RESPONSE_CONTENT_3,
+        "12A": MOCK_ICB_PRACTICES_RESPONSE_CONTENT_1,
+        "13B": MOCK_ICB_PRACTICES_RESPONSE_CONTENT_2,
+        "14C": MOCK_ICB_PRACTICES_RESPONSE_CONTENT_3,
     }
     primary_role_lookup = {
         "RO177": MOCK_PRACTICE_RESPONSE_CONTENT_DEPRECATED,
-        "RO98": MOCK_CCG_RESPONSE_CONTENT,
+        "RO98": MOCK_ICB_RESPONSE_CONTENT,
     }
 
     roles_response = MOCK_PRACTICE_RESPONSE_CONTENT
@@ -224,13 +224,13 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available_pr
 
         main()
 
-        output_path = f"v4/{year}/{month}/organisationMetadata.json"
+        output_path = f"v5/{year}/{month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
         assert actual["month"] == month
         assert actual["practices"] == EXPECTED_PRACTICES_DEPRECATED
-        assert actual["ccgs"] == EXPECTED_CCGS
+        assert actual["icbs"] == EXPECTED_ICBS
 
         expected_metadata = {
             "date-anchor": "2020-01-30T18:44:49+00:00",
@@ -273,13 +273,13 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_available():
         environ["DATE_ANCHOR"] = "2020-01-30T18:44:49Z"
         main()
 
-        output_path = f"v4/{year}/{month}/organisationMetadata.json"
+        output_path = f"v5/{year}/{month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
         assert actual["month"] == month
         assert actual["practices"] == EXPECTED_PRACTICES
-        assert actual["ccgs"] == EXPECTED_CCGS
+        assert actual["icbs"] == EXPECTED_ICBS
 
         expected_metadata = {
             "date-anchor": "2020-01-30T18:44:49+00:00",
@@ -324,13 +324,13 @@ def test_uploads_ods_metadata_when_date_anchor_month_asid_lookup_is_not_availabl
 
         main()
 
-        output_path = f"v4/{year}/{current_month}/organisationMetadata.json"
+        output_path = f"v5/{year}/{current_month}/organisationMetadata.json"
         actual = _read_s3_json_file(output_bucket, output_path)
 
         assert actual["year"] == year
         assert actual["month"] == current_month
         assert actual["practices"] == EXPECTED_PRACTICES
-        assert actual["ccgs"] == EXPECTED_CCGS
+        assert actual["icbs"] == EXPECTED_ICBS
 
         expected_metadata = {
             "date-anchor": "2020-02-27T18:44:49+00:00",
