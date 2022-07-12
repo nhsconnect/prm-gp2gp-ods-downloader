@@ -33,13 +33,13 @@ PRACTICE_SEARCH_PARAMS_WITH_MULTIPLE_ROLES = {
     "Limit": "1000",
 }
 
-ICB_SEARCH_PARAMS = {
+SICBL_SEARCH_PARAMS = {
     "PrimaryRoleId": "RO98",
     "Status": "Active",
     "Limit": "1000",
 }
 
-ICB_PRACTICES_SEARCH_PARAMS = {
+SICBL_PRACTICES_SEARCH_PARAMS = {
     "RelTypeId": "RE4",
     "RelStatus": "active",
     "Limit": "1000",
@@ -52,10 +52,10 @@ class OdsDataSource(Protocol):
     ) -> List[OrganisationDetails]:
         ...
 
-    def fetch_all_icbs(self) -> List[OrganisationDetails]:
+    def fetch_all_sicbls(self) -> List[OrganisationDetails]:
         ...
 
-    def fetch_practices_for_icb(self, icb_ods_code: str) -> List[OrganisationDetails]:
+    def fetch_practices_for_sicbl(self, sicbl_ods_code: str) -> List[OrganisationDetails]:
         ...
 
 
@@ -71,12 +71,14 @@ class OdsPortalDataFetcher:
         else:
             return self._fetch_organisation_details(PRACTICE_SEARCH_PARAMS_NON_PRISONS_DEPRECATED)
 
-    def fetch_all_icbs(self) -> List[OrganisationDetails]:
-        return self._fetch_organisation_details(ICB_SEARCH_PARAMS)
+    def fetch_all_sicbls(self) -> List[OrganisationDetails]:
+        return self._fetch_organisation_details(SICBL_SEARCH_PARAMS)
 
-    def fetch_practices_for_icb(self, icb_ods_code: str) -> List[OrganisationDetails]:
-        icb_practices_search_params = ICB_PRACTICES_SEARCH_PARAMS | {"TargetOrgId": icb_ods_code}
-        return self._fetch_organisation_details(icb_practices_search_params)
+    def fetch_practices_for_sicbl(self, sicbl_ods_code: str) -> List[OrganisationDetails]:
+        sicbl_practices_search_params = SICBL_PRACTICES_SEARCH_PARAMS | {
+            "TargetOrgId": sicbl_ods_code
+        }
+        return self._fetch_organisation_details(sicbl_practices_search_params)
 
     def _fetch_organisation_details(self, params):
         response = self._ods_client.fetch_organisation_data(params)

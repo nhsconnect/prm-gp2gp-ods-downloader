@@ -10,7 +10,7 @@ from prmods.domain.ods_portal.ods_portal_data_fetcher import OdsDataSource, Orga
 
 
 @dataclass
-class IcbDetails:
+class SicblDetails:
     ods_code: str
     name: str
     practices: List[str]
@@ -29,16 +29,16 @@ class OrganisationMetadata:
     year: int
     month: int
     practices: List[PracticeDetails]
-    icbs: List[IcbDetails]
+    sicbls: List[SicblDetails]
 
     @classmethod
-    def from_practice_and_icb_lists(
-        cls, practices: List[PracticeDetails], icbs: List[IcbDetails], year: int, month: int
+    def from_practice_and_sicbl_lists(
+        cls, practices: List[PracticeDetails], sicbls: List[SicblDetails], year: int, month: int
     ):
         return cls(
             generated_on=datetime.now(tzutc()),
             practices=practices,
-            icbs=icbs,
+            sicbls=sicbls,
             year=year,
             month=month,
         )
@@ -81,32 +81,32 @@ class Gp2gpOrganisationMetadataService:
 
         return list(self._enrich_practices_with_asids(unique_practices, asid_lookup))
 
-    def retrieve_icb_practice_allocations(
+    def retrieve_sicbl_practice_allocations(
         self, canonical_practice_list: List[PracticeDetails]
-    ) -> List[IcbDetails]:
-        icbs = self._data_fetcher.fetch_all_icbs()
-        unique_icbs = self._remove_duplicate_organisations(icbs)
+    ) -> List[SicblDetails]:
+        sicbls = self._data_fetcher.fetch_all_sicbls()
+        unique_sicbls = self._remove_duplicate_organisations(sicbls)
         canonical_practice_ods_codes = {practice.ods_code for practice in canonical_practice_list}
-        icb_practice_allocations = [
-            self._fetch_icb_practice_allocation(icb, canonical_practice_ods_codes)
-            for icb in unique_icbs
+        sicbl_practice_allocations = [
+            self._fetch_sicbl_practice_allocation(sicbl, canonical_practice_ods_codes)
+            for sicbl in unique_sicbls
         ]
-        icbs_containing_practices = [
-            icb for icb in icb_practice_allocations if len(icb.practices) > 0
+        sicbls_containing_practices = [
+            sicbl for sicbl in sicbl_practice_allocations if len(sicbl.practices) > 0
         ]
-        return icbs_containing_practices
+        return sicbls_containing_practices
 
-    def _fetch_icb_practice_allocation(
-        self, icb: OrganisationDetails, canonical_practice_ods_codes: Set[str]
-    ) -> IcbDetails:
-        icb_practices = self._data_fetcher.fetch_practices_for_icb(icb.ods_code)
+    def _fetch_sicbl_practice_allocation(
+        self, sicbl: OrganisationDetails, canonical_practice_ods_codes: Set[str]
+    ) -> SicblDetails:
+        sicbl_practices = self._data_fetcher.fetch_practices_for_sicbl(sicbl.ods_code)
 
-        return IcbDetails(
-            ods_code=icb.ods_code,
-            name=icb.name,
+        return SicblDetails(
+            ods_code=sicbl.ods_code,
+            name=sicbl.name,
             practices=[
                 practice.ods_code
-                for practice in icb_practices
+                for practice in sicbl_practices
                 if practice.ods_code in canonical_practice_ods_codes
             ],
         )
