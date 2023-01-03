@@ -16,15 +16,16 @@ Common development workflows are defined in the `tasks` script.
 
 Ensure you are not within a virtual environment (run `deactivate` if you are in one)
 
-1. Run `pyenv install 3.9.4`
+1. Run `pyenv install 3.9.6`
 2. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout)
-3. Run `pyenv global 3.9.4`
+3. Run `pyenv global 3.9.6`
 4. For the following steps open another terminal.
 5. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
 6. Run `python -m pip install -U "pip>=21.1`
    - `pyenv global` should output the specific python version specified rather than `system`.
    - Both `python --version` and `pip --version` should point to the versions you have specified.
    - `ls -l $(which pipenv)` should output `.../.pyenv/shims/pipenv` rather than `...Cellar...` (which is a brew install).
+
 
 #### Python virtual environment
 
