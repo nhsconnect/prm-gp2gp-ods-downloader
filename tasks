@@ -52,6 +52,7 @@ do
       dojo "./tasks devenv validate"
       ;;
     dep)
+        ./tasks output-versions
         ./tasks check-deps > audit-output.txt
         ;;
     dojo-dep)
