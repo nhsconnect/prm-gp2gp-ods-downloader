@@ -1,55 +1,75 @@
 # prm-gp2gp-ods-downloader
 
-This repository contains the pipeline responsible for fetching ODS codes and names of all active GP practices and saving it to json file.
+This repository contains the pipeline responsible for fetching ODS codes and names of all active GP practices and ICBs, then saving it to json file.
 
 ## Developing
 
 Common development workflows are defined in the `tasks` script.
 
-### Prerequisites
+This project is written in Python 3.9.
 
-- Python 3.9. Use [pyenv](https://github.com/pyenv/pyenv) to easily switch Python versions.
-- [Pipenv](https://pypi.org/project/pipenv/). Install by running `python -m pip install pipenv`
+### Recommended developer environment
+
+- [pyenv](https://github.com/pyenv/pyenv) to easily switch Python versions.
+- [Pipenv](https://pypi.org/project/pipenv/) to manage dependencies and virtual environments.
+- [dojo](https://github.com/kudulab/dojo) 
 - [Docker](https://www.docker.com/get-started)
+  to run test suites in the same environment used by the CI/CD server.
 
-#### Installing the correct versions of pip and python locally
+#### Installing pyenv
+```
+brew install pyenv
+```
 
-Ensure you are not within a virtual environment (run `deactivate` if you are in one)
+#### Configure your shell's environment for Pyenv
 
-1. Run `pyenv install 3.9.6`
-2. Follow step 3 from [here](https://github.com/pyenv/pyenv#basic-github-checkout)
-3. Run `pyenv global 3.9.6`
-4. For the following steps open another terminal.
-5. Run `python -m pip install pipenv` to install pipenv using the updated python environment.
-6. Run `python -m pip install -U "pip>=21.1`
-   - `pyenv global` should output the specific python version specified rather than `system`.
-   - Both `python --version` and `pip --version` should point to the versions you have specified.
-   - `ls -l $(which pipenv)` should output `.../.pyenv/shims/pipenv` rather than `...Cellar...` (which is a brew install).
+```
+For zsh:
+echo 'eval "$(pyenv init --path)"' >> ~/.zprofile
+echo 'eval "$(pyenv init -)"' >> ~/.zshrc
+```
 
+#### Install new python and set as default
 
-#### Python virtual environment
+```
+pyenv install 3.9.16
+pyenv global 3.9.16
+```
 
-From the base directory of the project, create a python3 virtual environment by running `./tasks devenv`, then to activate it run `pipenv shell`.
+#### Installing pipenv and updating pip
 
-To deactivate the virtual environment run `deactivate`.
+In a new shell, run the following:
+```
+python -m pip install -U pipenv
+python -m pip install -U "pip>=22.3.1"
+```
 
-To remove the virtual environment and clear the cache, run `pipenv --rm && pipenv --clear`.
+#### Build a dev env
 
-Run the following commands in the virtual environment:
+In a new shell, in the project directory run:
 
-### Scripts
+```
+./tasks devenv
+```
 
-These instructions assume you are using:
+This will create a python virtual environment containing all required dependencies.
 
-- [aws-vault](https://github.com/99designs/aws-vault) to validate your AWS credentials.
+#### Configure SDK
+
+To find out the path of this new virtual environment, run:
+
+```
+pipenv --venv
+```
+
+Now you can configure the IDE. The steps for IntelliJ are following:
+1. Go to `File -> Project Structure -> SDK -> Add SDK -> Python SDK -> Existing environments`
+2. Click on three dots, paste the virtual environment path from before, and point to the python binary.
+   The path should look like this: `/Users/janeDoe/.local/share/virtualenvs/prm-xxxx-ABCD1234/bin/python3.9` (xxxx is the name of this repo)
 
 ### Running the unit tests
 
 `./tasks test`
-
-### Running the end to end tests
-
-`./tasks e2e-test`
 
 ### Running tests, linting, and type checking
 
@@ -63,6 +83,8 @@ This will run the validation commands in the same container used by the GoCD pip
 
 ### Auto Formatting
 
+This will format the code and the imports.
+
 `./tasks format`
 
 ### Dependency Scanning
@@ -70,14 +92,6 @@ This will run the validation commands in the same container used by the GoCD pip
 `./tasks check-deps`
 
 - If this fails when running outside of Dojo, see [troubleshooting section](### Troubleshooting)
-
-### ODS Portal Pipeline
-
-This pipeline will fetch ODS codes and names of all active GP practices and save the JSON file to an S3 bucket.
-
-To build your image locally:
-
-`docker build . -t <tag>`
 
 
 ### Configuration
