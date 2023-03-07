@@ -165,8 +165,7 @@ def _build_fake_s3(host, port):
 
 
 def _build_fake_s3_bucket(bucket_name: str, s3):
-    s3_fake_bucket = s3.Bucket(bucket_name)
-    s3.create_bucket(
+    s3_fake_bucket = s3.create_bucket(
         Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": FAKE_S3_REGION}
     )
     return s3_fake_bucket
