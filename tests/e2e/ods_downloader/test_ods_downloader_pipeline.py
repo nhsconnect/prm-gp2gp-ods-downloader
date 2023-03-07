@@ -14,8 +14,7 @@ from moto.server import DomainDispatcherApplication, create_backend_app
 from werkzeug import Request, Response
 from werkzeug.serving import make_server
 
-from prmods.pipeline.main import main
-from src.prmods.pipeline.main import logger
+from prmods.pipeline.main import logger, main
 from tests.builders.file import build_gzip_csv
 
 FAKE_ODS_HOST = "127.0.0.1"
@@ -167,7 +166,9 @@ def _build_fake_s3(host, port):
 
 def _build_fake_s3_bucket(bucket_name: str, s3):
     s3_fake_bucket = s3.Bucket(bucket_name)
-    s3_fake_bucket.create()
+    s3.create_bucket(
+        Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": FAKE_S3_REGION}
+    )
     return s3_fake_bucket
 
 

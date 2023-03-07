@@ -1,4 +1,4 @@
-from src.prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
+from prmods.domain.ods_portal.asid_lookup import AsidLookup, OdsAsid
 
 
 def test_get_asids_returns_correct_asids_given_one_mapping():
