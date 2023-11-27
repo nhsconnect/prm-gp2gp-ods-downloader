@@ -8,8 +8,8 @@ setup(
     install_requires=[
         "python-dateutil>=2.8",
         "requests>=2.2",
-        "boto3>=1.17.42",
-        "urllib3==1.26.18",
+        "boto3>=1.29.7",
+        # "urllib3==1.26.18",
     ],
     entry_points={
         "console_scripts": [
