@@ -24,10 +24,10 @@ moto = {version = "~=4.1.4", extras = ["server"]}
 freezegun = "~=0.3"
 pytest-cov = "~=2.10"
 pytest = "~=6.1"
-urllib3 = "==1.26.18"
 
 [requires]
 python_version = "3.9"
+urllib3 = "==1.26.18"
 
 [scripts]
 test = "pytest --cov=prmods --cov-report=term-missing tests/unit tests/e2e"
